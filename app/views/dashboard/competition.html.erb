@@ -141,7 +141,7 @@
       <%# Premium segment %>
       <div class="text-center">
         <p class="font-display text-3xl font-bold text-accent-purple mb-2">
-          <%= @market_analysis[:top_models].count { |m| m[:market_position] == 'premium' %>
+          <%= @market_analysis[:top_models].count { |m| m[:market_position] == 'premium' } %>
         </p>
         <p class="font-body text-sm text-text-secondary">Premium Models ($<%= DashboardConstants::MARKET_POSITION_PREMIUM_THRESHOLD %>+)</p>
       </div>
@@ -149,7 +149,7 @@
       <%# Mid-range segment %>
       <div class="text-center">
         <p class="font-display text-3xl font-bold text-accent-blue mb-2">
-          <%= @market_analysis[:top_models].count { |m| m[:market_position] == 'mid-range' %>
+          <%= @market_analysis[:top_models].count { |m| m[:market_position] == 'mid-range' } %>
         </p>
         <p class="font-body text-sm text-text-secondary">Mid-Range Models ($<%= DashboardConstants::MARKET_POSITION_MIDRANGE_THRESHOLD %>-999)</p>
       </div>
@@ -157,7 +157,7 @@
       <%# Budget segment %>
       <div class="text-center">
         <p class="font-display text-3xl font-bold text-accent-green mb-2">
-          <%= @market_analysis[:top_models].count { |m| m[:market_position] == 'budget' %>
+          <%= @market_analysis[:top_models].count { |m| m[:market_position] == 'budget' } %>
         </p>
         <p class="font-body text-sm text-text-secondary">Budget Models (under $<%= DashboardConstants::MARKET_POSITION_MIDRANGE_THRESHOLD %>)</p>
       </div>

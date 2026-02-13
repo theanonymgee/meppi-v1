@@ -8,4 +8,5 @@ class Country < ApplicationRecord
 
   # Scopes
   scope :active, -> { where(active: true) }
+  scope :by_priority, -> { order(priority: :asc, name: :asc) }
 end

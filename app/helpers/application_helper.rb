@@ -8,9 +8,9 @@ module ApplicationHelper
 
   def dashboard_channel_path(phone_id = nil)
     if phone_id.present?
-      "/dashboard/channel_strategy?phone_id=#{phone_id}"
+      "/dashboard/channel?phone_id=#{phone_id}"
     else
-      '/dashboard/channel_strategy'
+      '/dashboard/channel'
     end
   end
 
