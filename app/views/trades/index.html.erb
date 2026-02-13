@@ -1,0 +1,17 @@
+<%# gsm-rails trades index - 거래 목록 %>
+<% content_for :title, "GSM 거래 목록" %>
+
+<div class="trades-index">
+  <header class="page-header">
+    <h1>GSM 거래 목록</h1>
+    <%= render "trades/search_form" %>
+  </header>
+
+  <main class="trades-container" data-turbo-frame="trades_list">
+    <% @trades.each do |trade| %>
+      <%= render "trades/trade_card", locals: { trade: } %>
+    <% end %>
+  </main>
+</div>
+
+<%= turbo_frame_tag "trades_list", src: trades_path(format: :turbo_stream) %>

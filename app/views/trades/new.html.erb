@@ -1,0 +1,15 @@
+<%# gsm-rails trades new - 신규 거래 생성 %>
+<% content_for :title, "신규 거래 등록" %>
+
+<div class="trade-new">
+  <header class="page-header">
+    <h1>신규 거래 등록</h1>
+    <%= link_to "목록으로", trades_path, class: "btn btn-secondary" %>
+  </header>
+
+  <main class="trade-form-container">
+    <%= form_with(model: @trade, url: trades_path, data: { turbo_frame: "_top" }) do |f| %>
+      <%= render "trades/form", locals: { f: f } %>
+    <% end %>
+  </main>
+</div>

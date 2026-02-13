@@ -1,0 +1,149 @@
+<% content_for :title, "Promotions" %>
+
+<div class="space-y-8">
+  <!-- Page Header -->
+  <header class="border-b border-border-color pb-4">
+    <h1 class="font-display text-4xl font-bold text-text-primary">
+      Active Promotions
+    </h1>
+    <p class="font-body text-text-secondary mt-2">
+      Track current discounts and promotional pricing
+    </p>
+  </header>
+
+  <!-- Summary Cards -->
+  <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <%= render 'shared/kpi_card',
+      label: "Active Promotions",
+      value: @promotions_data[:total_count].to_s %>
+
+    <%= render 'shared/kpi_card',
+      label: "Average Discount",
+      value: "#{@promotions_data[:avg_discount]}%" %>
+
+    <%= render 'shared/kpi_card',
+      label: "Top Discount",
+      value: @promotions_data[:discount_ranking].first&.dig(:max_discount).to_s + "%" || "N/A" %>
+  </section>
+
+  <!-- Country Filter -->
+  <section class="bg-bg-tertiary border border-border-color rounded p-6">
+    <%= form_tag dashboard_promotions_path, method: :get, class: "flex gap-4 items-end" do %>
+      <div class="flex-1">
+        <%= label_tag :country_id, "Filter by Country", class: "block font-body text-sm font-medium text-text-secondary mb-1" %>
+        <%= select_tag :country_id,
+                       options_from_collection_for_select(
+                         @countries,
+                         :id,
+                         :name,
+                       params[:country_id]
+                       ),
+                       include_blank: "All countries",
+                       onchange: "this.form.submit();",
+                       class: "w-full font-body text-base bg-bg-primary border border-border-color rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent-blue" %>
+      </div>
+    <% end %>
+  </section>
+
+  <!-- Active Promotions List -->
+  <section class="bg-bg-tertiary border border-border-color rounded p-6">
+    <h2 class="font-display text-xl font-bold text-text-primary mb-4">
+      Current Promotions (<%= @promotions_data[:active_promotions].length %>)
+    </h2>
+
+    <% if @promotions_data[:active_promotions].any? %>
+      <div class="space-y-4">
+        <% @promotions_data[:active_promotions].each do |promo| %>
+          <div class="bg-bg-primary border border-border-color rounded p-4 hover:shadow-card-hover transition-shadow duration-150">
+            <div class="flex justify-between items-start">
+              <div class="flex-1">
+                <h3 class="font-body text-lg font-semibold text-text-primary mb-1">
+                  <%= promo[:phone] %>
+                </h3>
+                <p class="font-body text-sm text-text-secondary mb-2">
+                  <%= promo[:channel] %>
+                </p>
+
+                <div class="flex items-center gap-3 text-sm">
+                  <div class="bg-accent-green/10 border border-accent-green rounded px-2 py-1">
+                    <span class="font-mono font-semibold text-accent-green">
+                      Save <%= promo[:discount_percent] %>%
+                    </span>
+                  </div>
+                  <div class="text-text-tertiary">
+                    <span class="font-mono line-through">$<%= number_with_delimiter(promo[:original_price], precision: 0) %></span>
+                    <span class="mx-2">&rarr;</span>
+                    <span class="font-mono font-semibold text-text-primary">$<%= number_with_delimiter(promo[:discounted_price], precision: 0) %></span>
+                  </div>
+                </div>
+
+                <% if promo[:days_remaining] %>
+                  <p class="font-body text-xs text-text-tertiary mt-2">
+                    <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <%= promo[:days_remaining] %> days remaining
+                  </p>
+                <% end %>
+              </div>
+
+              <div class="text-right">
+                <span class="badge badge--status-normal">
+                  Active
+                </span>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="text-center py-12">
+        <svg class="mx-auto w-16 h-16 text-text-tertiary mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+        </svg>
+        <p class="font-body text-base text-text-secondary mb-1">No active promotions found</p>
+        <p class="font-body text-sm text-text-tertiary">
+          Check back later for new promotions and discounts
+        </p>
+      </div>
+    <% end %>
+  </section>
+
+  <!-- Discount Rankings -->
+  <% if @promotions_data[:discount_ranking].any? %>
+  <section class="bg-bg-tertiary border border-border-color rounded p-6">
+    <h2 class="font-display text-xl font-bold text-text-primary mb-4">
+      Best Discounts by Phone
+    </h2>
+
+    <div class="overflow-x-auto">
+      <table class="data-table">
+        <thead class="data-table__header">
+          <tr>
+            <th class="data-table__header-cell">Phone</th>
+            <th class="data-table__header-cell">Max Discount</th>
+            <th class="data-table__header-cell">Channels</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @promotions_data[:discount_ranking].first(15).each do |ranking| %>
+            <tr class="data-table__row">
+              <td class="data-table__cell data-table__cell--text">
+                <%= ranking[:phone] %>
+              </td>
+              <td class="data-table__cell">
+                <span class="font-mono font-semibold text-accent-green">
+                  <%= ranking[:max_discount] %>%
+                </span>
+              </td>
+              <td class="data-table__cell">
+                <%= ranking[:channel_count] %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <% end %>
+</div>

@@ -1,0 +1,16 @@
+<%# gsm-rails trades edit - 거래 수정 %>
+<% content_for :title, "거래 수정: #{@trade.location}" %>
+
+<div class="trade-edit">
+  <header class="page-header">
+    <h1>거래 수정</h1>
+    <%= link_to "상세보기", trade_path(@trade), class: "btn btn-secondary" %>
+    <%= link_to "목록으로", trades_path, class: "btn btn-secondary" %>
+  </header>
+
+  <main class="trade-form-container">
+    <%= form_with(model: @trade, url: trade_path(@trade), method: :patch, data: { turbo_frame: "_top" }) do |f| %>
+      <%= render "trades/form", locals: { f: f } %>
+    <% end %>
+  </main>
+</div>

@@ -1,0 +1,111 @@
+id,country_id,name,type,url,active,created_at
+1,1,Amazon.ae,pure_player,https://www.amazon.ae/,1,2026-02-06 14:11:26
+2,1,Etisalat (e&),telco,https://www.etisalat.ae/,1,2026-02-06 14:11:26
+3,1,du,telco,https://www.du.ae/,1,2026-02-06 14:11:26
+4,1,Sharaf DG,retail,https://uae.sharafdg.com/,1,2026-02-06 14:11:26
+5,1,Noon,pure_player,https://www.noon.com/uae-en/,1,2026-02-06 14:11:26
+6,1,Jumbo Electronics,retail,https://www.jumbo.ae/,1,2026-02-06 14:11:26
+7,1,Carrefour UAE,hypermarket,https://www.carrefouruae.com/,1,2026-02-06 14:11:26
+8,2,Amazon.sa,pure_player,https://www.amazon.sa/,1,2026-02-07 10:09:24
+9,2,Noon KSA,pure_player,https://www.noon.com/saudi-en/,1,2026-02-07 10:09:24
+10,2,STC,telco,https://www.stc.com.sa/,1,2026-02-07 10:09:24
+11,2,Mobily,telco,https://www.mobily.com.sa/,1,2026-02-07 10:09:24
+12,2,Zain KSA,telco,https://sa.zain.com/,1,2026-02-07 10:09:24
+13,2,eXtra,retail,https://www.extra.com/,1,2026-02-07 10:09:24
+14,2,Jarir Bookstore,retail,https://www.jarir.com/,1,2026-02-07 10:09:24
+15,3,Amazon.eg,pure_player,https://www.amazon.eg/,1,2026-02-07 14:27:21
+16,3,Jumia Egypt,pure_player,https://www.jumia.com.eg/,1,2026-02-07 14:27:21
+17,3,Noon Egypt,pure_player,https://www.noon.com/egypt-en/,1,2026-02-07 14:27:21
+18,3,Vodafone Egypt,telco,https://www.vodafone.com.eg/,1,2026-02-07 14:27:21
+19,3,Orange Egypt,telco,https://www.orange.eg/,1,2026-02-07 14:27:21
+20,3,Etisalat Misr,telco,https://www.etisalat.ae/egypt/,1,2026-02-07 14:27:21
+21,3,WE (Telecom Egypt),telco,https://www.we.com.eg/,1,2026-02-07 14:27:21
+22,3,B.TECH,retail,https://www.btech.com.eg/,1,2026-02-07 14:27:21
+23,3,Carrefour Egypt,hypermarket,https://www.carrefour.com.eg/,1,2026-02-07 14:27:21
+24,1,Samsung UAE (Official),brand_official,https://www.samsung.com/ae/,1,2026-02-07 16:46:32
+25,1,Apple UAE (Official),brand_official,https://www.apple.com/ae/,1,2026-02-07 16:46:32
+26,2,Samsung KSA (Official),brand_official,https://www.samsung.com/sa/,1,2026-02-07 16:46:32
+27,2,Apple KSA (Official),brand_official,https://www.apple.com/sa/,1,2026-02-07 16:46:32
+28,3,Samsung Egypt (Official),brand_official,https://www.samsung.com/eg/,1,2026-02-07 16:46:32
+29,3,Apple Egypt (Official),brand_official,https://www.apple.com/eg/,1,2026-02-07 16:46:32
+30,4,Amazon.tr,pure_player,https://www.amazon.com.tr/,1,2026-02-07 16:47:49
+31,4,Jumia Turkey,pure_player,https://www.jumia.com.tr/,1,2026-02-07 16:47:49
+32,4,Hepsiburada,pure_player,https://www.hepsiburada.com/,1,2026-02-07 16:47:49
+33,4,n11.com,pure_player,https://www.n11.com/,1,2026-02-07 16:47:49
+34,4,Trendyol,pure_player,https://www.trendyol.com/,1,2026-02-07 16:47:49
+35,4,Vatan Bilgisayar,pure_player,https://www.vatanbilgisayar.com.tr/,1,2026-02-07 16:47:49
+36,4,Samsung.com Turkey,official_brand,https://www.samsung.com/tr/,1,2026-02-07 16:47:49
+37,4,Apple.com Turkey,official_brand,https://www.apple.com/tr/,1,2026-02-07 16:47:49
+38,4,Turkcell,telco,https://www.turkcell.com.tr/,1,2026-02-07 16:47:49
+39,4,Vodafone Turkey,telco,https://www.vodafone.com.tr/,1,2026-02-07 16:47:49
+40,4,Türk Telekom,telco,https://www.turktelekom.com.tr/,1,2026-02-07 16:47:49
+41,4,MediaMarkt,retail,https://www.mediamarkt.com.tr/,1,2026-02-07 16:47:49
+42,4,Teknosa,retail,https://www.teknosa.com.tr/,1,2026-02-07 16:47:49
+43,4,Bimeks,retail,https://www.bimeks.com.tr/,1,2026-02-07 16:47:49
+44,4,Kliksa,retail,https://www.kliksa.com.tr/,1,2026-02-07 16:47:49
+45,4,TeknoSaray,retail,https://www.teknosaray.com.tr/,1,2026-02-07 16:47:49
+46,4,Gold,retail,https://www.gold.com.tr/,1,2026-02-07 16:47:49
+47,4,CarrefourSA,hypermarket,https://www.carrefoursa.com.tr/,1,2026-02-07 16:47:49
+48,4,Macrocenter,hypermarket,https://www.macrocenter.com.tr/,1,2026-02-07 16:47:49
+49,4,Kipa,hypermarket,https://www.kipa.com.tr/,1,2026-02-07 16:47:49
+50,5,Daraz.pk,pure_player,https://www.daraz.pk/,1,2026-02-08 12:14:15
+51,6,Xcite,retail,https://www.xcite.com/,1,2026-02-08 17:16:39
+52,6,Noon Kuwait,pure_player,https://www.noon.com/kuwait-en/,1,2026-02-08 17:16:39
+53,6,Sharaf DG Kuwait,retail,https://kw.sharafdg.com/,1,2026-02-08 17:16:39
+54,6,Zain Kuwait,telco,https://www.kw.zain.com/,1,2026-02-08 17:16:39
+55,6,Ooredoo Kuwait,telco,https://www.ooredoo.com.kw/,1,2026-02-08 17:16:39
+56,6,STC Kuwait,telco,https://www.stc.com.kw/,1,2026-02-08 17:16:39
+57,6,Apple Kuwait (Official),brand_official,https://www.apple.com/ku/,1,2026-02-08 17:16:39
+58,6,Samsung Kuwait (Official),brand_official,https://www.samsung.com/ae/,1,2026-02-08 17:16:39
+65,6,Ansar Gallery,retail,https://www.ansargallery.com/,1,2026-02-08 17:16:43
+68,7,Noon Qatar,pure_player,https://www.noon.com/qatar-en/,1,2026-02-08 17:17:03
+69,7,AlAneesQatar,pure_player,https://alaneesqatar.qa/,1,2026-02-08 17:17:03
+70,7,PeoplesTelecom,pure_player,https://peoplestelecom.qa,1,2026-02-08 17:17:03
+71,7,RPTech,pure_player,https://rptech.qa/,1,2026-02-08 17:17:03
+72,7,Lulu Hypermarket Qatar,hypermarket,https://gcc.luluhypermarket.com/en-qa/,1,2026-02-08 17:17:03
+73,7,Carrefour Qatar,hypermarket,https://www.carrefourqatar.com/,1,2026-02-08 17:17:03
+74,7,Ansar Gallery,retail,https://www.ansargallery.com/,1,2026-02-08 17:17:03
+75,7,Ooredoo Qatar,telco,https://www.ooredoo.qa/web/en/,1,2026-02-08 17:17:03
+76,7,Vodafone Qatar,telco,https://www.vodafone.qa/en/home,1,2026-02-08 17:17:03
+77,8,Noon Oman,pure_player,https://www.noon.com/oman-en/,1,2026-02-09 01:23:19
+78,8,Sharaf DG Oman,retail,https://oman.sharafdg.com/,1,2026-02-09 01:23:19
+79,8,Shopkees Oman,pure_player,https://www.shopkees.com/oman-en/,1,2026-02-09 01:23:19
+80,8,Jazp Oman,pure_player,http://oman.jazp.com/om-en/,1,2026-02-09 01:23:19
+81,8,Sarco Online Oman,retail,https://www.sarcoonline.com/,1,2026-02-09 01:23:19
+82,8,Omantel,telco,https://www.omantel.om/,1,2026-02-09 01:23:19
+83,8,Ooredoo Oman,telco,https://www.ooredoo.om/,1,2026-02-09 01:23:19
+84,8,Vodafone Oman (formerly Nawras),telco,https://www.vodafone.om/,1,2026-02-09 01:23:19
+85,9,Noon Bahrain,pure_player,https://www.noon.com/bahrain-en/,1,2026-02-09 01:23:19
+86,9,Sharaf DG Bahrain,retail,https://bahrain.sharafdg.com/,1,2026-02-09 01:23:19
+87,9,Shopkees Bahrain,pure_player,https://www.shopkees.com/bahrain-en/,1,2026-02-09 01:23:19
+88,9,Dukakeen Bahrain,pure_player,https://www.dukakeen.com/,1,2026-02-09 01:23:19
+89,9,Zain Bahrain,telco,https://www.bh.zain.com/,1,2026-02-09 01:23:19
+90,9,STC Bahrain,telco,https://www.stc.com.bh/,1,2026-02-09 01:23:19
+91,9,Batelco,telco,https://www.batelco.com/,1,2026-02-09 01:23:19
+92,10,Amal Iraq,pure_player,https://www.amal.com/en,1,2026-02-09 01:23:19
+93,10,Ubuy Iraq,pure_player,https://www.ubuy.iq/en/,1,2026-02-09 01:23:19
+94,10,Elryan Iraq,pure_player,https://www.elryan.com/en/,1,2026-02-09 01:23:19
+95,10,Zain Iraq,telco,https://www.iq.zain.com/,1,2026-02-09 01:23:19
+96,10,Asiacell,telco,https://www.asiacell.com/,1,2026-02-09 01:23:19
+97,10,Korek Telecom,telco,https://www.korektelecom.com/,1,2026-02-09 01:23:19
+98,11,Noon Jordan,pure_player,https://www.noon.com/jordan-en/,1,2026-02-09 01:23:19
+99,11,Amazon.jo,pure_player,https://www.amazon.jo/,1,2026-02-09 01:23:19
+100,11,Jumia Jordan,pure_player,https://www.jumia.com.jo/,1,2026-02-09 01:23:19
+101,11,Zain Jordan,telco,https://www.jo.zain.com/,1,2026-02-09 01:23:19
+102,11,Orange Jordan,telco,https://www.orange.jo/,1,2026-02-09 01:23:19
+103,11,Umniah,telco,https://www.umniah.com/,1,2026-02-09 01:23:19
+104,11,SmartBuy Jordan,retail,,1,2026-02-10 22:03:27
+105,11,Leaders Jordan,retail,,1,2026-02-10 22:03:27
+106,11,iStyle Jordan,retail,,1,2026-02-10 22:03:27
+107,11,DNA Jordan,retail,,1,2026-02-10 22:03:27
+108,11,Samsung.com Levant,official_brand,,1,2026-02-10 22:03:27
+109,1,mygsm.me,retail,https://www.mygsm.me/,1,2026-02-10 22:26:10
+110,1,Ecity,retail,https://ecityuae.ae/,1,2026-02-10 22:26:10
+111,3,iMedia Stores,retail,https://www.imediastores.com/,1,2026-02-10 22:26:10
+112,3,Mobile Shop Egypt,telco,https://www.mobileshop.com.eg/,1,2026-02-10 22:26:10
+113,5,PriceOye.pk,pure_player,https://priceoye.pk/,1,2026-02-10 22:26:10
+114,5,Symbios.pk,retail,https://www.symbios.pk/,1,2026-02-10 22:26:10
+115,6,Sky Phone Kuwait,retail,https://www.skyphonekwt.com/,1,2026-02-10 22:26:10
+116,6,Blink Kuwait,retail,https://www.blink.com.kw/,1,2026-02-10 22:26:10
+117,12,Ubuy Morocco,pure_player,https://www.ubuy.ma/,1,2026-02-10 22:26:10
+118,12,Mobile Mall Morocco,pure_player,https://morocco.mobilemall.co/,1,2026-02-10 22:26:10

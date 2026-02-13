@@ -1,0 +1,11 @@
+{
+  "feature": "rails-dashboard-ui",
+  "phase": "do",
+  "createdAt": "2026-02-11T03:00:00Z",
+  "updatedAt": "2026-02-11T05:00:00Z",
+  "previousFeature": "semantic-search-pgvector",
+  "previousMatchRate": 93,
+  "designDirection": "editorial-financial-times",
+  "designCompleted": true,
+  "implementationStarted": true
+}

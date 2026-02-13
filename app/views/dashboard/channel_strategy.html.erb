@@ -1,0 +1,207 @@
+<% content_for :title, "Channel Strategy" %>
+
+<div class="space-y-8">
+  <!-- Page Header -->
+  <header class="border-b border-border-color pb-4">
+    <h1 class="font-display text-4xl font-bold text-text-primary">
+      Channel Strategy
+    </h1>
+    <p class="font-body text-text-secondary mt-2">
+      Compare prices across channels and find the best deals
+    </p>
+  </header>
+
+  <!-- Phone Selection Form -->
+  <section class="bg-bg-tertiary border border-border-color rounded p-6">
+    <h2 class="font-display text-xl font-bold text-text-primary mb-4">Select Phone</h2>
+    <%= form_tag dashboard_channel_path, method: :get, class: "flex gap-4 items-end" do %>
+      <div class="flex-1">
+        <%= label_tag :phone_id, "Phone", class: "block font-body text-sm font-medium text-text-secondary mb-1" %>
+        <%= select_tag :phone_id,
+                       options_from_collection_for_select(
+                         Phone.order(:brand, :model).select(:id, :brand, :model),
+                         :id,
+                         :full_name,
+                       params[:phone_id]
+                       ),
+                       include_blank: "Choose a phone...",
+                       class: "w-full font-body text-base bg-bg-primary border border-border-color rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent-blue" %>
+      </div>
+
+      <div class="w-48">
+        <%= label_tag :country_id, "Country (optional)", class: "block font-body text-sm font-medium text-text-secondary mb-1" %>
+        <%= select_tag :country_id,
+                       options_from_collection_for_select(
+                         Country.active.by_priority,
+                         :id,
+                         :name,
+                       params[:country_id]
+                       ),
+                       include_blank: "All countries",
+                       class: "w-full font-body text-base bg-bg-primary border border-border-color rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent-blue" %>
+      </div>
+
+      <div>
+        <%= submit_tag "Analyze", class: "btn btn--primary" %>
+      </div>
+    <% end %>
+  </section>
+
+  <!-- Analysis Results -->
+  <% if @analysis %>
+    <% if @analysis[:error] %>
+      <div class="alert alert--critical">
+        <p class="font-body text-sm"><%= @analysis[:error] %></p>
+      </div>
+    <% else %>
+      <!-- Phone Overview -->
+      <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="md:col-span-2 bg-bg-tertiary border border-border-color rounded p-6">
+          <h2 class="font-display text-2xl font-bold text-text-primary mb-2">
+            <%= @analysis[:phone][:full_name] %>
+          </h2>
+          <p class="font-body text-text-secondary mb-4">
+            <%= @analysis[:phone][:brand] %> <%= @analysis[:phone][:model] %>
+          </p>
+
+          <% if @analysis[:phone][:display_type] || @analysis[:phone][:storage] %>
+            <div class="flex gap-4 text-sm">
+              <% if @analysis[:phone][:display_type] %>
+                <span class="font-body text-text-secondary">
+                  <span class="font-medium">Display:</span> <%= @analysis[:phone][:display_type] %>
+                </span>
+              <% end %>
+              <% if @analysis[:phone][:storage] %>
+                <span class="font-body text-text-secondary">
+                  <span class="font-medium">Storage:</span> <%= @analysis[:phone][:storage] %>
+                </span>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+
+        <!-- Price Range Summary -->
+        <div class="bg-accent-blue/5 border border-accent-blue/20 rounded p-6">
+          <h3 class="font-display text-sm font-semibold text-accent-blue uppercase tracking-wider mb-3">
+            Price Range
+          </h3>
+          <div class="space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="font-body text-sm text-text-secondary">Minimum</span>
+              <span class="font-mono text-base font-semibold text-accent-green">
+                $<%= number_with_delimiter(@analysis[:price_range][:min], precision: 0) %>
+              </span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="font-body text-sm text-text-secondary">Average</span>
+              <span class="font-mono text-base font-semibold text-text-primary">
+                $<%= number_with_delimiter(@analysis[:price_range][:avg], precision: 0) %>
+              </span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="font-body text-sm text-text-secondary">Maximum</span>
+              <span class="font-mono text-base font-semibold text-accent-red">
+                $<%= number_with_delimiter(@analysis[:price_range][:max], precision: 0) %>
+              </span>
+            </div>
+            <div class="pt-2 border-t border-border-color">
+              <div class="flex justify-between items-center">
+                <span class="font-body text-xs text-text-tertiary">Price Spread</span>
+                <span class="font-mono text-sm text-text-secondary">
+                  <%= @analysis[:price_range][:spread_percent] %>%
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Channel Comparison Table -->
+      <section class="bg-bg-tertiary border border-border-color rounded p-6">
+        <h2 class="font-display text-xl font-bold text-text-primary mb-4">
+          Channel Comparison
+        </h2>
+
+        <div class="overflow-x-auto">
+          <table class="data-table">
+            <thead class="data-table__header">
+              <tr>
+                <th class="data-table__header-cell">Channel</th>
+                <th class="data-table__header-cell">Type</th>
+                <th class="data-table__header-cell">Price (USD)</th>
+                <th class="data-table__header-cell">vs Average</th>
+                <th class="data-table__header-cell">Recommendation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @analysis[:channels].each do |channel| %>
+                <tr class="data-table__row">
+                  <td class="data-table__cell data-table__cell--text">
+                    <%= channel[:name] %>
+                    <% if channel[:is_cheapest] %>
+                      <span class="ml-2 badge badge--status-normal">Best Price</span>
+                    <% end %>
+                  </td>
+                  <td class="data-table__cell data-table__cell--text">
+                    <%= channel[:channel_type].humanize %>
+                  </td>
+                  <td class="data-table__cell">
+                    $<%= number_with_delimiter(channel[:price_usd], precision: 0) %>
+                  </td>
+                  <td class="data-table__cell <%= channel[:discount_from_avg] >= 0 ? 'text-accent-green' : 'text-accent-red' %>">
+                    <%= channel[:discount_from_avg] > 0 ? '-' : '+' %><%= channel[:discount_from_avg].abs %>%
+                  </td>
+                  <td class="data-table__cell data-table__cell--text">
+                    <% case channel[:recommendation]
+                       when 'best_value' %>
+                      <span class="badge badge--status-normal">Best Value</span>
+                    <% when 'great_deal' %>
+                      <span class="badge badge--status-normal" style="background-color: #E8F5E9; color: #2E7D32;">Great Deal</span>
+                    <% when 'good_price' %>
+                      <span class="badge badge--status-normal" style="background-color: #E3F2FD; color: #1E50A2;">Good Price</span>
+                    <% when 'fair_price' %>
+                      <span class="badge badge--status-normal" style="background-color: #F5F2EA; color: #5A5A5A;">Fair Price</span>
+                    <% when 'overpriced' %>
+                      <span class="badge badge--status-critical">Overpriced</span>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Recommendations -->
+      <% if @analysis[:recommendations].any? %>
+      <section class="bg-accent-blue/5 border border-accent-blue/20 rounded p-6">
+        <h2 class="font-display text-xl font-bold text-accent-blue mb-4">
+          Recommendations
+        </h2>
+        <div class="space-y-3">
+          <% @analysis[:recommendations].each do |rec| %>
+            <div class="flex items-start gap-3">
+              <div class="flex-shrink-0 mt-1">
+                <% if rec[:priority] == :high %>
+                  <svg class="w-5 h-5 text-accent-red" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                  </svg>
+                <% else %>
+                  <svg class="w-5 h-5 text-accent-blue" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                  </svg>
+                <% end %>
+              </div>
+              <div class="flex-1">
+                <p class="font-body text-base text-text-primary">
+                  <strong><%= rec[:channel_name] %></strong>: <%= rec[:reason] %>
+                </p>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </section>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

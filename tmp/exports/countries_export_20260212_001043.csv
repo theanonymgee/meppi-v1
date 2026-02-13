@@ -1,0 +1,13 @@
+id,code,name,currency,exchange_source,priority,active,created_at
+1,ae,United Arab Emirates,AED,official,1,1,2026-02-06 14:11:26
+2,sa,Saudi Arabia,SAR,official,1,1,2026-02-07 10:09:12
+3,eg,Egypt,EGP,official,1,1,2026-02-07 14:27:21
+4,tr,Turkey,TRY,official,1,1,2026-02-07 16:47:49
+5,pk,Pakistan,PKR,official,2,1,2026-02-08 12:14:15
+6,kw,Kuwait,KWD,official,1,1,2026-02-08 17:16:30
+7,qa,Qatar,QAR,official,3,1,2026-02-08 17:16:43
+8,om,Oman,OMR,official,2,1,2026-02-09 01:23:19
+9,bh,Bahrain,BHD,official,2,1,2026-02-09 01:23:19
+10,iq,Iraq,IQD,official,2,1,2026-02-09 01:23:19
+11,jo,Jordan,JOD,official,2,1,2026-02-09 01:23:19
+12,ma,Morocco,MAD,,2,1,2026-02-10 22:26:10

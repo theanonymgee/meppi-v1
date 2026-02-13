@@ -1,0 +1,97 @@
+<div class="min-h-screen bg-white text-gray-900" data-controller="competition">
+  <header class="border-b border-gray-200 px-4 py-3">
+    <div class="max-w-7xl mx-auto">
+      <h1 class="text-2xl font-serif text-blue-700">Competition Analysis</h1>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-6">
+    <%# Country filter %>
+    <div class="mb-6">
+      <label for="country-select" class="block text-sm font-medium text-gray-700 mb-2">
+        Filter by Country
+      </label>
+      <%= select_tag 'country_id',
+          options_from_collection(@countries, :id, :name),
+          prompt: 'All Countries',
+          class: 'w-full border-gray-300 rounded-md shadow-sm px-3 py-2',
+          data: { action: 'competition#filter' } %>
+    </div>
+
+    <%# Market share chart %>
+    <div class="mb-8">
+      <h2 class="text-lg font-serif mb-4 text-blue-700">Market Share by Brand</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <% @market_analysis[:market_share].each do |brand, share| %>
+          <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+            <h3 class="font-medium text-gray-900"><%= brand %></h3>
+            <p class="text-2xl font-bold text-blue-700"><%= number_to_percentage(share) %></p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <%# Top models %>
+    <div class="mb-8">
+      <h2 class="text-lg font-serif mb-4 text-blue-700">Top Competing Models</h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Competitors</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <% @market_analysis[:top_models].each do |model| %>
+              <tr>
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <%= link_to model[:phone], competition_compare_path(phone_ids: [model[:phone_id]]),
+                      class: 'text-blue-600 hover:text-blue-800 font-medium' %>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium
+                    <%= case model[:market_position]
+                      when 'premium' then 'bg-green-100 text-green-800'
+                      when 'mid-range' then 'bg-yellow-100 text-yellow-800'
+                      else 'bg-gray-100 text-gray-800' %>">
+                    <%= model[:market_position].humanize %>
+                  </span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-gray-900">
+                  <%= number_to_currency(model[:price_avg]) %>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-gray-600">
+                  <%= model[:competitor_count] %> competitors
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <%# New entries %>
+    <div>
+      <h2 class="text-lg font-serif mb-4 text-blue-700">Recent Entries</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <% @market_analysis[:new_entries].each do |entry| %>
+          <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+            <h3 class="font-medium text-gray-900"><%= entry[:phone] %></h3>
+            <p class="text-sm text-gray-500 mb-2">First seen: <%= entry[:first_seen] %></p>
+            <p class="text-sm text-gray-600">
+              Channels: <%= entry[:channels] %>
+              <% if entry[:has_prices] %>
+                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded bg-green-100 text-green-800 text-xs">Prices available</span>
+              <% else %>
+                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded bg-gray-100 text-gray-600 text-xs">No prices yet</span>
+              <% end %>
+            </p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </main>
+</div>

@@ -1,0 +1,36 @@
+<%# 거래 카드 partial (Trade Card Partial) %>
+<%# local: trade [GsmTrade] 거래 객체 %>
+<div class="trade-card" id="trade_<%= trade.id %>">
+  <div class="trade-image">
+    <% if trade.image_url.present? %>
+      <%= image_tag trade.image_url, alt: trade.description, class: "trade-thumbnail" %>
+    <% else %>
+      <div class="trade-no-image">No Image</div>
+    <% end %>
+  </div>
+
+  <div class="trade-info">
+    <h3 class="trade-title">
+      <%= trade.location %> -
+      <span class="trade-price"><%= number_to_currency(trade.price) %></span>
+    </h3>
+
+    <div class="trade-details">
+      <p><strong>면적:</strong> <%= trade.area %>㎡</p>
+      <p><strong>층:</strong> <%= trade.floor %></p>
+      <p><strong>방:</strong> <%= trade.rooms %>개</p>
+      <p><strong>욕실:</strong> <%= trade.bathrooms %>개</p>
+    </div>
+
+    <% if trade.description.present? %>
+      <p class="trade-description"><%= trade.description %></p>
+    <% end %>
+  </div>
+
+  <div class="trade-actions">
+    <%= link_to "상세보기", trade_path(trade), class: "btn btn-primary", data: { turbo_frame: "_top" } %>
+    <%= link_to "수정", edit_trade_path(trade), class: "btn btn-secondary" %>
+    <%= button_to "삭제", trade_path(trade), method: :delete, class: "btn btn-danger",
+        data: { turbo_method: :delete, turbo_confirm: "정말 삭제하시겠습니까?" } %>
+  </div>
+</div>

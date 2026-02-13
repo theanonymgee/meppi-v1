@@ -1,0 +1,245 @@
+<% content_for :title, "Regional Benchmarks" %>
+
+<div class="space-y-8">
+  <!-- Page Header -->
+  <header class="border-b border-border-color pb-4">
+    <h1 class="font-display text-4xl font-bold text-text-primary">
+      Regional Price Benchmarks
+    </h1>
+    <p class="font-body text-text-secondary mt-2">
+      UAE benchmark monitoring and regional price comparison
+    </p>
+  </header>
+
+  <!-- Phone Selection -->
+  <section class="bg-bg-tertiary border border-border-color rounded p-6">
+    <h2 class="font-display text-lg font-bold text-text-primary mb-4">Select Phone for Analysis</h2>
+    <%= form_tag dashboard_regional_path, method: :get, class: "flex gap-4 items-end" do %>
+      <div class="flex-1">
+        <%= label_tag :phone_id, "Phone", class: "block font-body text-sm font-medium text-text-secondary mb-1" %>
+        <%= select_tag :phone_id,
+                       options_from_collection_for_select(
+                         Phone.order(:brand, :model).select(:id, :brand, :model),
+                         :id,
+                         :full_name,
+                       params[:phone_id]
+                       ),
+                       include_blank: "Choose a phone...",
+                       onchange: "this.form.submit();",
+                       class: "w-full font-body text-base bg-bg-primary border border-border-color rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent-blue" %>
+      </div>
+    <% end %>
+  </section>
+
+  <!-- Phone-specific Analysis -->
+  <% if @phone && @benchmark_data %>
+    <% if @benchmark_data[:error] %>
+      <div class="alert alert--critical">
+        <p class="font-body text-sm"><%= @benchmark_data[:error] %></p>
+      </div>
+    <% else %>
+      <!-- UAE Benchmark Card -->
+      <section class="bg-accent-blue/5 border border-accent-blue/20 rounded p-6">
+        <h2 class="font-display text-xl font-bold text-accent-blue mb-4">
+          UAE Benchmark: <%= @benchmark_data[:uae_benchmark][:phone] %>
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <p class="font-body text-sm text-text-secondary mb-1">Wholesale Price</p>
+            <p class="font-mono text-2xl font-bold text-text-primary">
+              $<%= number_with_delimiter(@benchmark_data[:uae_benchmark][:wholesale_price], precision: 0) %>
+            </p>
+          </div>
+          <div>
+            <p class="font-body text-sm text-text-secondary mb-1">Retail Price (inc. <%= @benchmark_data[:uae_benchmark][:vat_rate] * 100 %>% VAT)</p>
+            <p class="font-mono text-2xl font-bold text-accent-blue">
+              $<%= number_with_delimiter(@benchmark_data[:uae_benchmark][:retail_price], precision: 0) %>
+            </p>
+          </div>
+          <div>
+            <p class="font-body text-sm text-text-secondary mb-1">Countries Compared</p>
+            <p class="font-mono text-2xl font-bold text-text-primary">
+              <%= @benchmark_data[:regional_comparison].count %>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Alerts Section -->
+      <% if @benchmark_data[:alerts].any? %>
+      <section class="alert alert--critical">
+        <h2 class="font-display text-xl font-bold text-accent-red mb-4">
+          Critical Alerts (<%= @benchmark_data[:alerts].count %>)
+        </h2>
+        <p class="font-body text-sm text-text-secondary mb-4">
+          The following prices are significantly below UAE benchmark:
+        </p>
+
+        <div class="space-y-3 max-h-96 overflow-y-auto">
+          <% @benchmark_data[:alerts].each do |alert| %>
+            <div class="bg-bg-primary rounded p-3 border border-border-color">
+              <div class="flex justify-between items-start">
+                <div class="flex-1">
+                  <p class="font-body text-sm font-medium text-text-primary">
+                    <%= alert[:country] %> &bull; <%= alert[:channel] %>
+                  </p>
+                  <p class="font-mono text-xs text-text-tertiary mt-1">
+                    $<%= number_with_delimiter(alert[:local_price], precision: 0) %> vs $<%= number_with_delimiter(alert[:uae_benchmark], precision: 0) %> UAE
+                  </p>
+                </div>
+                <div class="text-right">
+                  <p class="font-mono text-lg font-bold text-accent-red">
+                    <%= alert[:discount_percent] %>%
+                  </p>
+                  <p class="font-body text-xs text-text-tertiary">Below benchmark</p>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </section>
+      <% end %>
+
+      <!-- Regional Comparison Table -->
+      <section class="bg-bg-tertiary border border-border-color rounded p-6">
+        <h2 class="font-display text-xl font-bold text-text-primary mb-4">
+          Regional Price Comparison
+        </h2>
+
+        <div class="overflow-x-auto">
+          <table class="data-table">
+            <thead class="data-table__header">
+              <tr>
+                <th class="data-table__header-cell">Country</th>
+                <th class="data-table__header-cell">Local Price</th>
+                <th class="data-table__header-cell">UAE Benchmark</th>
+                <th class="data-table__header-cell">Discount</th>
+                <th class="data-table__header-cell">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @benchmark_data[:regional_comparison].each do |comparison| %>
+                <tr class="data-table__row">
+                  <td class="data-table__cell data-table__cell--text">
+                    <%= comparison[:country] %>
+                  </td>
+                  <td class="data-table__cell">
+                    $<%= number_with_delimiter(comparison[:local_price], precision: 0) %>
+                  </td>
+                  <td class="data-table__cell">
+                    $<%= number_with_delimiter(comparison[:uae_benchmark], precision: 0) %>
+                  </td>
+                  <td class="data-table__cell <%= comparison[:discount_percent] >= 0 ? 'text-accent-green' : 'text-accent-red' %>">
+                    <%= comparison[:discount_percent] >= 0 ? '-' : '+' %><%= comparison[:discount_percent].abs %>%
+                  </td>
+                  <td class="data-table__cell data-table__cell--text">
+                    <% case comparison[:status]
+                       when 'normal' %>
+                      <span class="badge badge--status-normal">Normal</span>
+                    <% when 'warning' %>
+                      <span class="badge badge--status-warning">Warning</span>
+                    <% when 'critical' %>
+                      <span class="badge badge--status-critical">Critical</span>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    <% end %>
+
+  <!-- Aggregate Analysis (shown when no phone selected) -->
+  <% elsif @aggregate_data %>
+    <!-- Summary Stats -->
+    <section class="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <%= render 'shared/kpi_card',
+        label: "Total Violations",
+        value: @aggregate_data[:summary][:total_violations].to_s,
+        status: @aggregate_data[:summary][:total_violations] > 0 ? :critical : :normal %>
+
+      <%= render 'shared/kpi_card',
+        label: "Affected Phones",
+        value: @aggregate_data[:summary][:affected_phones].to_s %>
+
+      <%= render 'shared/kpi_card',
+        label: "Affected Countries",
+        value: @aggregate_data[:summary][:affected_countries].to_s %>
+
+      <%= render 'shared/kpi_card',
+        label: "Avg Discount",
+        value: "#{@aggregate_data[:summary][:avg_discount]}%" %>
+    </section>
+
+    <!-- Top Violations -->
+    <% if @aggregate_data[:top_violations].any? %>
+    <section class="bg-bg-tertiary border border-border-color rounded p-6">
+      <h2 class="font-display text-xl font-bold text-text-primary mb-4">
+        Top Price Violations
+      </h2>
+
+      <div class="overflow-x-auto">
+        <table class="data-table">
+          <thead class="data-table__header">
+            <tr>
+              <th class="data-table__header-cell">Phone</th>
+              <th class="data-table__header-cell">Country</th>
+              <th class="data-table__header-cell">Channel</th>
+              <th class="data-table__header-cell">Local Price</th>
+              <th class="data-table__header-cell">Discount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @aggregate_data[:top_violations].first(20).each do |violation| %>
+              <tr class="data-table__row">
+                <td class="data-table__cell data-table__cell--text">
+                  <%= violation[:phone] %>
+                </td>
+                <td class="data-table__cell data-table__cell--text">
+                  <%= violation[:country] %>
+                </td>
+                <td class="data-table__cell data-table__cell--text">
+                  <%= violation[:channel] %>
+                </td>
+                <td class="data-table__cell">
+                  $<%= number_with_delimiter(violation[:local_price], precision: 0) %>
+                </td>
+                <td class="data-table__cell">
+                  <span class="font-mono font-semibold text-accent-red">
+                    <%= violation[:discount_percent] %>%
+                  </span>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <% end %>
+
+    <!-- Country Summary -->
+    <% if @aggregate_data[:countries_by_violations].any? %>
+    <section class="bg-bg-tertiary border border-border-color rounded p-6">
+      <h2 class="font-display text-xl font-bold text-text-primary mb-4">
+        Violations by Country
+      </h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <% @aggregate_data[:countries_by_violations].first(9).each do |country, count| %>
+          <div class="bg-bg-primary border border-border-color rounded p-4">
+            <h3 class="font-body text-base font-semibold text-text-primary mb-2">
+              <%= country %>
+            </h3>
+            <p class="font-mono text-2xl font-bold text-accent-red">
+              <%= count %>
+            </p>
+            <p class="font-body text-xs text-text-tertiary mt-1">violations</p>
+          </div>
+        <% end %>
+      </div>
+    </section>
+    <% end %>
+  <% end %>
+</div>

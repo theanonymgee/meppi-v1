@@ -1,0 +1,44 @@
+<%#
+  KPI Card Component
+  Usage:
+    <%= render 'shared/kpi_card',
+      label: "Total Phones",
+      value: number_with_delimiter(@total_phones),
+      trend: { value: "+12%", direction: "up" },
+      status: :normal
+    %>
+
+  Parameters:
+    label: String - KPI label text
+    value: String - KPI value
+    trend: Hash - Optional { value: String, direction: "up"|"down" }
+    status: Symbol - Optional :normal, :warning, :critical
+%>
+
+<div class="kpi-card <%= "border-l-4 border-accent-amber" if local_assigns[:status] == :warning %> <%= "border-l-4 border-accent-red" if local_assigns[:status] == :critical %>">
+  <!-- Label -->
+  <div class="kpi-card__label">
+    <%= label %>
+  </div>
+
+  <!-- Value -->
+  <div class="kpi-card__value">
+    <%= value %>
+  </div>
+
+  <!-- Trend (optional) -->
+  <% if local_assigns[:trend].present? %>
+    <div class="kpi-card__trend <%= trend[:direction] == 'up' ? 'kpi-card__trend--up' : 'kpi-card__trend--down' %>">
+      <% if trend[:direction] == 'up' %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+        </svg>
+      <% else %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+        </svg>
+      <% end %>
+      <span><%= trend[:value] %></span>
+    </div>
+  <% end %>
+</div>

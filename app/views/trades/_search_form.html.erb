@@ -1,0 +1,25 @@
+<%# 검색 폼 partial (Search Form Partial) %>
+<%= form_with url: search_path, method: :get, local: true, data: { turbo_frame: "search_results", controller: "search", action: "search" } do |f| %>
+  <div class="search-form">
+    <div class="search-input-group">
+      <%= f.text_field :query, placeholder: "검색어를 입력하세요...", class: "search-input",
+          data: { controller: "search", action: "autocomplete", search_debounce_ms: "300" } %>
+      <%= f.submit "검색", class: "btn btn-primary" %>
+    </div>
+
+    <div class="search-options">
+      <label>
+        <%= f.check_box :use_rag, checked: true %>
+        RAG 검색 사용
+      </label>
+      <label>
+        <%= f.radio_button :search_type, value: "semantic", checked: true %>
+        의미 검색
+      </label>
+      <label>
+        <%= f.radio_button :search_type, value: "vector" %>
+        벡터 검색
+      </label>
+    </div>
+  </div>
+<% end %>

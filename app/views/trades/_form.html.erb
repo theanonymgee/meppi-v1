@@ -1,0 +1,71 @@
+<%# 공통 폼 partial (Common Form Partial) %>
+<%# local: f [FormBuilder] - 폼 빌더 %>
+
+<div class="trade-form">
+  <div class="form-row">
+    <div class="form-field">
+      <%= f.label :trade_type, class: "form-label" %>
+      <%= f.text_field :trade_type, class: "form-input", placeholder: "아파트/오피스템/빌라/주택 등을 선택하세요" %>
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="form-field">
+      <%= f.label :location, class: "form-label" %>
+      <%= f.text_field :location, class: "form-input", placeholder: "예: 강남구 A동 101동 101호" %>
+    </div>
+
+    <div class="form-field">
+      <%= f.label :price, class: "form-label" %>
+      <%= f.number_field :price, class: "form-input", placeholder: "가격 (원화)", step: "0.01", min: 0 %>
+    </div>
+
+  <div class="form-row">
+    <div class="form-field">
+      <%= f.label :area, class: "form-label" %>
+      <%= f.number_field :area, class: "form-input", placeholder: "면적 (㎡)", step: "0.1", min: 1 %>
+    </div>
+
+    <div class="form-row">
+    <div class="form-field">
+      <%= f.label :floor, class: "form-label" %>
+      <%= f.select :floor, class: "form-select" do %>
+        <%= options_for_select([["저층", "중층", "고층"]]) %>
+      <% end %>
+    </div>
+
+  <div class="form-row">
+    <div class="form-field">
+      <%= f.label :rooms, class: "form-label" %>
+      <%= f.number_field :rooms, class: "form-input", placeholder: "방수", min: 1, max: 50 %>
+    </div>
+
+  <div class="form-row">
+    <div class="form-field">
+      <%= f.label :bathrooms, class: "form-label" %>
+      <%= f.number_field :bathrooms, class: "form-input", placeholder: "욕실수", min: 1, max: 10 %>
+    </div>
+
+  <div class="form-row">
+    <div class="form-field">
+      <%= f.label :description, class: "form-label" %>
+      <%= f.text_area :description, class: "form-textarea", placeholder: "상세 설명을 입력하세요", rows: 4 %>
+    </div>
+
+  <div class="form-row">
+    <div class="form-field">
+      <%= f.label :image_url, class: "form-label" %>
+      <%= f.url_field :image_url, class: "form-input", placeholder: "이미지 URL을 입력하세요" %>
+    </div>
+
+  <div class="form-row">
+    <div class="form-field">
+      <%= f.label :source_url, class: "form-label" %>
+      <%= f.url_field :source_url, class: "form-input", placeholder: "출처 URL을 입력하세요" %>
+    </div>
+
+  <div class="form-actions">
+    <%= f.submit "저장", class: "btn btn-primary" %>
+    <%= link_to "취소", trades_path, class: "btn btn-secondary" %>
+  </div>
+</div>

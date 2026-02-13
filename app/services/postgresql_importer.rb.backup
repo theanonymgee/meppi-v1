@@ -1,0 +1,239 @@
+# frozen_string_literal: true
+
+# PostgreSQL Importer Service - Import data from CSV exports
+# Single Responsibility: Load legacy CSV exports into PostgreSQL database
+# Vibe Coding: Error handling, batch processing, no hardcoded values
+
+class PostgresqlImporter < BaseTask
+  IMPORT_DIR = ENV.fetch('MEPPI_EXPORT_DIR', 'tmp/exports')
+  BATCH_SIZE = 100
+
+  # Maps SQLite table names to import methods
+  TABLES = %i[
+    countries channels prices telco_plans telco_device_prices promotions exchange_rates dubai_benchmark
+  ].freeze
+
+  def initialize(import_dir: nil)
+    @import_dir = import_dir || IMPORT_DIR
+    @stats = {}
+
+  # Main entry point - Import all tables
+  # @return [Hash] Import results
+  def self.import_all
+    puts "=" * 60
+    puts "🔄 Starting PostgreSQL import..."
+    puts "=" * 60
+
+    results = {
+      countries: import_countries,
+      channels: import_channels,
+      prices: import_prices,
+      telco_plans: import_telco_plans,
+      telco_device_prices: import_telco_device_prices,
+      promotions: import_promotions,
+      exchange_rates: import_exchange_rates,
+      dubai_benchmark: import_dubai_benchmark,
+      phones: [],  # Phones will be imported from prices
+      errors: []
+    }
+
+    # Import countries first
+    begin
+      results[:countries] = import_countries
+    rescue StandardError => e
+        results[:countries][:errors] << { message: e.message }
+        puts "  ❌ Error importing countries: #{e.message}"
+
+    # Import channels
+    begin
+      results[:channels] = import_channels
+      rescue StandardError => e
+        results[:channels][:errors] << { message: e.message }
+        puts "  ❌ Error importing channels: #{e.message}"
+
+    # Import prices (phones from prices table)
+    begin
+      results[:prices] = import_prices
+      rescue StandardError => e
+        results[:errors] << { message: e.message }
+        puts "  ❌ Error importing prices: #{e.message}"
+
+    # Import phone records
+    begin
+      results[:phones] = import_phones
+      rescue StandardError => e
+        results[:errors] << { message: e.message }
+        puts "  ❌ Error importing phones: #{e.message}"
+
+    # Import promotions
+    begin
+      results[:promotions] = import_promotions
+      rescue StandardError => e
+        results[:promotions][:errors] << { message: e.message }
+        puts "  ❌ Error importing promotions: #{e.message}"
+
+    # Import exchange rates
+    begin
+      results[:exchange_rates] = import_exchange_rates
+      rescue StandardError => e
+        results[:exchange_rates][:errors] << { message: e.message }
+        puts "  ❌ Error importing exchange_rates: #{e.message}"
+
+    # Import Dubai benchmarks
+    begin
+      results[:dubai_benchmark] = import_dubai_benchmark
+      rescue StandardError => e
+        results[:dubai_benchmark][:errors] << { message: e.message }
+        puts "  ❌ Error importing dubai_benchmark: #{e.message}"
+
+    # Summary output
+    puts "\n" + "=" * 60
+    results.each do |table, data|
+      puts "  ✅ #{table}: #{data}"
+      puts "    Imported: #{data.count} records"
+      puts "    Errors: #{data[:errors].count} errors" if data[:errors].any?
+
+    results
+
+  # Check if export directory exists
+  def self.export_dir_exists?
+    Dir.exist?(@import_dir)
+
+  # Helper method to check and create export directory
+  # @return [Boolean] True if directory exists
+  def self.ensure_export_dir
+    Dir.mkdir(@import_dir) unless Dir.exist?(@import_dir)
+    true
+
+  # CSV file path for a table
+  # @param table_name [String] Table name
+  # @return [String] Full path to CSV file
+  def csv_file_path(table_name)
+    File.join(@import_dir, "#{table_name}_export_*.csv")
+
+  # Import countries from CSV
+  # @param csv_file [String] Path to CSV file
+  # @return [Hash] Import results
+  def import_countries
+    file = csv_file_path('countries')
+
+    return {} unless File.exist?(file)
+
+    count = 0
+    CSV.foreach(file, headers: true) do |row|
+      Country.create_or_find_by!(
+        code: row['code'],
+        name: row['name'],
+        currency: row['currency'],
+        exchange_source: row['exchange_source'] || 'official',
+        priority: row['priority'] || 2,
+        active: row['active'] == '1'
+      )
+      count += 1
+
+    { table: :countries, count: count, errors: [] }
+
+  # Import channels from CSV
+  def import_channels
+    csv_file = csv_file_path('channels')
+
+    return {} unless File.exist?(csv_file)
+
+    Country.active.find_each do |country|
+      next if country.code == 'AE' # UAE already exists, skip
+
+      Channel.create_or_find_by!(
+        country: country,
+        name: row['name'],
+        channel_type: parse_channel_type(row['type']),
+        url: row['url'],
+        active: row['active'] == '1'
+      )
+
+    { table: :channels, count: Channel.count, errors: [] }
+
+  # Import prices from prices table (referenced by phone_id)
+  # This will be called from phones import
+
+  # Import promotions
+  def import_promotions
+    csv_file = csv_file_path('promotions')
+
+    return {} unless File.exist?(csv_file)
+
+    count = 0
+    CSV.foreach(csv_file, headers: true) do |row|
+      Promotion.create_or_find_by!(
+        channel_id: row['channel_id'],
+        phone_id: row['phone_id'],
+        description: row['description'],
+        discount_percent: row['discount_percent'],
+        discount_amount_local: row['discount_amount_local'],
+        promo_code: row['promo_code'],
+        valid_from: parse_date(row['valid_from']),
+        valid_until: parse_date(row['valid_until'])
+      )
+      count += 1
+
+    { table: :promotions, count: count, errors: [] }
+
+  # Import exchange rates from CSV
+  def import_exchange_rates
+    csv_file = csv_file_path('exchange_rates')
+
+    return {} unless File.exist?(csv_file)
+
+    count = 0
+    CSV.foreach(csv_file, headers: true) do |row|
+      ExchangeRate.create_or_find_by!(
+        country_id: Country.find_by(code: row['currency']),
+        rate_official: row['rate_official'],
+        rate_used: row['rate_used'],
+        source: 'Central Bank'
+        date: Date.today
+      )
+      count += 1
+
+    { table: :exchange_rates, count: count, errors: [] }
+
+  # Import Dubai benchmarks from CSV
+  def import_dubai_benchmark
+    csv_file = csv_file_path('dubai_benchmark')
+
+    return {} unless File.exist?(csv_file)
+
+    count = 0
+    CSV.foreach(csv_file, headers: true) do |row|
+      DubaiBenchmark.create_or_find_by!(
+        phone_id: row['phone_id'],
+        price_aed: row['price_aed'],
+        price_wholesale: row['price_wholesale'],
+        date: parse_date(row['date'])
+      )
+      count += 1
+
+    { table: :dubai_benchmark, count: count, errors: [] }
+
+  # Helper: Parse date from various formats
+  # @param date_string [String] Date string from CSV
+  # @return [Date] Parsed date or nil
+  def self.parse_date(date_string)
+    return nil unless date_string
+
+    Date.strptime(date_string, '%Y-%m-%d %H:%M') rescue nil
+
+  # Helper: Parse channel type from string
+  # @param type_string [String] Type string from CSV
+  # @return [String] Parsed channel type or nil
+  def self.parse_channel_type(type_string)
+    return 'retailer' if type_string&.downcase&.include?('retail')
+           return 'telco' if type_string&.downcase&.include?('telco')
+           return 'official_brand' if type_string&.downcase&.include?('samsung', 'apple')
+           return 'pure_player' if type_string&.downcase&.include?('noon', 'amazon')
+           return nil
+
+  private
+
+  # Check if export directory exists before importing
+  def self.export_dir_exists?
+    Dir.exist?(@import_dir)

@@ -1,0 +1,16 @@
+<%# 청크 카드 partial (Chunk Card Partial) %>
+<%# local: chunk [Chunk] 청크 객체 %>
+<div class="chunk-card" id="chunk_<%= chunk.id %>">
+  <div class="chunk-header">
+    <span class="chunk-tokens">Tokens: <%= chunk.token_count %></span>
+    <span class="chunk-similarity">Similarity: <%= number_to_percentage(chunk.similarity * 100, precision: 2) %>%</span>
+  </div>
+
+  <div class="chunk-content">
+    <%= chunk.content %>
+  </div>
+
+  <div class="chunk-actions">
+    <%= link_to "관련 거래 보기", trade_path(chunk.trade), class: "btn btn-sm" %>
+  </div>
+</div>

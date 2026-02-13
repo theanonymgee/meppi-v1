@@ -1,0 +1,6 @@
+id,channel_id,plan_name,monthly_fee_local,contract_months,data_gb,minutes,active,created_at
+1,2,Business First Plus 110,110.0,24,12GB + Nonstop,Unlimited local + 300 intl,1,2026-02-06 15:04:15
+2,2,Business First Plus 175,175.0,24,30GB + Nonstop,Unlimited local + 600 intl,1,2026-02-06 15:04:15
+3,2,Business First Plus 275,275.0,24,60GB + Nonstop,Unlimited local + 1200 intl,1,2026-02-06 15:04:15
+4,2,Business Xtreme 450,450.0,24,150GB + Nonstop,Unlimited local + 2500 intl,1,2026-02-06 15:04:15
+5,2,Business Xtreme 750,750.0,24,Unlimited,Unlimited local + 5000 intl,1,2026-02-06 15:04:15

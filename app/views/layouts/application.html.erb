@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="MEPPI Strategic Intelligence Dashboard - Mobile phone price tracking and competitive analysis across Middle East markets">
+
+  <title><%= content_for?(:title) ? yield(:title) + " - MEPPI Dashboard" : "MEPPI Strategic Intelligence" %></title>
+
+  <!-- Favicon -->
+  <!-- Note: Add favicon.ico to public/ folder if needed -->
+
+  <!-- Google Fonts: Playfair Display, Source Sans Pro, IBM Plex Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:wght@400;500;600;700&family=Source+Sans+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- CSRF Meta Tags -->
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+
+  <!-- Tailwind CSS -->
+  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+
+  <!-- Importmap -->
+  <script type="importmap">
+  {
+    "imports": {
+      "application": "/assets/application.js",
+      "@hotwired/turbo-rails": "/assets/turbo.min.js",
+      "@hotwired/stimulus": "/assets/stimulus.min.js",
+      "@hotwired/stimulus-loading": "/assets/stimulus-loading.js",
+      "chart.js": "https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js",
+      "controllers": "/assets/controllers"
+    }
+  }
+  </script>
+  <script type="module" src="/assets/application.js"></script>
+</head>
+
+<body class="bg-bg-primary text-text-primary font-body antialiased min-h-screen flex flex-col">
+  <!-- Header -->
+  <%= render 'shared/header' %>
+
+  <!-- Navigation -->
+  <%= render 'shared/navigation' %>
+
+  <!-- Main Content -->
+  <main class="container mx-auto px-4 py-8 flex-grow" role="main">
+    <%= yield %>
+  </main>
+
+  <!-- Footer -->
+  <%= render 'shared/footer' %>
+
+  <!-- Turbo Flash Messages -->
+  <% if notice %>
+    <div class="fixed top-4 right-4 bg-accent-green/10 border border-accent-green text-accent-green px-4 py-2 rounded shadow-lg z-50">
+      <%= notice %>
+    </div>
+  <% end %>
+
+  <% if alert %>
+    <div class="fixed top-4 right-4 bg-accent-red/10 border border-accent-red text-accent-red px-4 py-2 rounded shadow-lg z-50">
+      <%= alert %>
+    </div>
+  <% end %>
+</body>
+</html>

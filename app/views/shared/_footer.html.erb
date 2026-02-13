@@ -1,0 +1,42 @@
+<!-- Footer -->
+<footer class="bg-bg-secondary border-t border-border-color mt-auto">
+  <div class="container mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- About MEPPI -->
+      <div>
+        <h3 class="font-display text-lg font-bold text-text-primary mb-3">MEPPI</h3>
+        <p class="font-body text-sm text-text-secondary leading-relaxed">
+          Mobile Electronics Pricing & Positioning Intelligence<BR>
+          Strategic dashboard for competitive price tracking across Middle East markets.
+        </p>
+      </div>
+
+      <!-- Quick Stats -->
+      <div>
+        <h3 class="font-display text-lg font-bold text-text-primary mb-3">Coverage</h3>
+        <ul class="font-body text-sm text-text-secondary space-y-2">
+          <li><%= number_with_delimiter(Phone.count) %> Phones Tracked</li>
+          <li><%= number_with_delimiter(Price.count) %> Price Points</li>
+          <li><%= number_with_delimiter(Channel.count) %> Channels</li>
+          <li><%= number_with_delimiter(Country.count) %> Countries</li>
+        </ul>
+      </div>
+
+      <!-- System Info -->
+      <div>
+        <h3 class="font-display text-lg font-bold text-text-primary mb-3">System</h3>
+        <ul class="font-body text-sm text-text-secondary space-y-2">
+          <li>Data last updated: <%= Price.maximum(:date)&.strftime("%B %d, %Y") || "N/A" %></li>
+          <li>Rails <%= Rails.version %></li>
+          <li>Environment: <%= Rails.env %></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="border-t border-divider mt-6 pt-6 text-center">
+      <p class="font-body text-xs text-text-tertiary">
+        &copy; <%= Time.current.year %> MEPPI. All rights reserved.
+      </p>
+    </div>
+  </div>
+</footer>

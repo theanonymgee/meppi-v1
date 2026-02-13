@@ -1,0 +1,67 @@
+=== Starting Frontend Endpoint Tests ===
+Testing: / (Dashboard Home)
+Endpoint: /
+Status: 404
+❌ FAIL - / returned 404
+Response headers:
+Status: 404
+Time: 0.004436
+
+Testing: /dashboard (Dashboard Index)
+Endpoint: /dashboard
+Status: 500
+❌ FAIL - /dashboard returned 500
+Response headers:
+Status: 500
+Time: 0.155088
+
+Testing: /channel-comparison (Channel Comparison)
+Endpoint: /channel-comparison
+Status: 500
+❌ FAIL - /channel-comparison returned 500
+Response headers:
+Status: 500
+Time: 0.110563
+
+Testing: /competition (Competition Index)
+Endpoint: /competition
+Status: 500
+❌ FAIL - /competition returned 500
+Response headers:
+Status: 500
+Time: 0.150276
+
+Testing: /promotion (Promotion Index)
+Endpoint: /promotion
+Status: 500
+❌ FAIL - /promotion returned 500
+Response headers:
+Status: 500
+Time: 0.112069
+
+Testing: /regional-price (Regional Price)
+Endpoint: /regional-price
+Status: 404
+❌ FAIL - /regional-price returned 404
+Response headers:
+Status: 404
+Time: 0.002421
+
+=== Testing API Endpoints ===
+Testing: /health (Health Check)
+Endpoint: /health
+Status: 200
+✅ PASS - /health returned 200
+
+Testing: /api/v1/navigation (API Navigation)
+Endpoint: /api/v1/navigation
+Status: 500
+❌ FAIL - /api/v1/navigation returned 500
+Response headers:
+Status: 500
+Time: 0.003501
+
+=== Testing Semantic Search API ===
+Semantic Search Status: 
+❌ FAIL - Semantic API returned 
+

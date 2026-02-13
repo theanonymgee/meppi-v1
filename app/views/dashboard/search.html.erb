@@ -1,0 +1,190 @@
+<% content_for :title, "Semantic Search" %>
+
+<div class="space-y-8">
+  <!-- Page Header -->
+  <header class="border-b border-border-color pb-4">
+    <h1 class="font-display text-4xl font-bold text-text-primary">
+      Semantic Phone Search
+    </h1>
+    <p class="font-body text-text-secondary mt-2">
+      Find phones using natural language queries powered by AI
+    </p>
+  </header>
+
+  <!-- Search Interface -->
+  <section class="bg-bg-tertiary border border-border-color rounded p-8">
+    <div data-controller="search" data-search-url-value="/api/v1/semantic_search">
+      <label for="search-input" class="block font-display text-lg font-semibold text-text-primary mb-3">
+        Search for phones
+      </label>
+
+      <div class="flex gap-4">
+        <div class="flex-1 relative">
+          <input
+            id="search-input"
+            type="search"
+            data-search-target="input"
+            data-action="keydown->search#onEnter"
+            placeholder="e.g., 'Samsung phones under $600' or 'iPhones with best camera'"
+            class="w-full font-body text-base bg-bg-primary border border-border-color rounded-lg px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-accent-blue focus:border-transparent"
+            autofocus
+          >
+          <svg class="absolute right-4 top-3.5 w-5 h-5 text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </div>
+
+        <button
+          data-action="click->search#search"
+          class="btn btn--primary px-6 py-3"
+        >
+          <span class="flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            Search
+          </span>
+        </button>
+      </div>
+
+      <p class="font-body text-sm text-text-tertiary mt-3">
+        Try: "Samsung Galaxy S series", "phones with 5G", "budget iPhones", or "flagship phones under $800"
+      </p>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div data-search-target="loading" class="hidden mt-6 text-center">
+      <div class="inline-flex items-center gap-3">
+        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-accent-blue"></div>
+        <span class="font-body text-base text-text-secondary">Searching...</span>
+      </div>
+    </div>
+
+    <!-- Search Results -->
+    <div data-search-target="results" class="mt-6">
+      <!-- Initial help text -->
+      <div class="text-center py-12">
+        <svg class="mx-auto w-16 h-16 text-text-tertiary mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+        <h3 class="font-display text-xl font-semibold text-text-primary mb-2">
+          Start Your Search
+        </h3>
+        <p class="font-body text-base text-text-secondary max-w-md mx-auto">
+          Use natural language to find phones. Our AI-powered search understands context, brands, features, and price ranges.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Example Searches -->
+  <section class="bg-bg-secondary border border-border-color rounded p-6">
+    <h2 class="font-display text-lg font-bold text-text-primary mb-4">Example Searches</h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="bg-bg-primary border border-border-color rounded p-4 hover:shadow-card-hover transition-shadow duration-150 cursor-pointer example-search" data-query="Samsung Galaxy S series">
+        <h3 class="font-body text-sm font-semibold text-text-primary mb-1">
+          "Samsung Galaxy S series"
+        </h3>
+        <p class="font-body text-xs text-text-tertiary">
+          Find all Samsung Galaxy S models
+        </p>
+      </div>
+
+      <div class="bg-bg-primary border border-border-color rounded p-4 hover:shadow-card-hover transition-shadow duration-150 cursor-pointer example-search" data-query="iPhones under $700">
+        <h3 class="font-body text-sm font-semibold text-text-primary mb-1">
+          "iPhones under $700"
+        </h3>
+        <p class="font-body text-xs text-text-tertiary">
+          Budget-friendly iPhone options
+        </p>
+      </div>
+
+      <div class="bg-bg-primary border border-border-color rounded p-4 hover:shadow-card-hover transition-shadow duration-150 cursor-pointer example-search" data-query="5G phones with best camera">
+        <h3 class="font-body text-sm font-semibold text-text-primary mb-1">
+          "5G phones with best camera"
+        </h3>
+        <p class="font-body text-xs text-text-tertiary">
+          High-end camera phones
+        </p>
+      </div>
+
+      <div class="bg-bg-primary border border-border-color rounded p-4 hover:shadow-card-hover transition-shadow duration-150 cursor-pointer example-search" data-query="budget Android phones">
+        <h3 class="font-body text-sm font-semibold text-text-primary mb-1">
+          "budget Android phones"
+        </h3>
+        <p class="font-body text-xs text-text-tertiary">
+          Affordable Android options
+        </p>
+      </div>
+
+      <div class="bg-bg-primary border border-border-color rounded p-4 hover:shadow-card-hover transition-shadow duration-150 cursor-pointer example-search" data-query="flagship phones 2024">
+        <h3 class="font-body text-sm font-semibold text-text-primary mb-1">
+          "flagship phones 2024"
+        </h3>
+        <p class="font-body text-xs text-text-tertiary">
+          Latest premium models
+        </p>
+      </div>
+
+      <div class="bg-bg-primary border border-border-color rounded p-4 hover:shadow-card-hover transition-shadow duration-150 cursor-pointer example-search" data-query="phones with 1TB storage">
+        <h3 class="font-body text-sm font-semibold text-text-primary mb-1">
+          "phones with 1TB storage"
+        </h3>
+        <p class="font-body text-xs text-text-tertiary">
+          Maximum storage capacity
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Search Tips -->
+  <section class="bg-bg-tertiary border border-border-color rounded p-6">
+    <h2 class="font-display text-lg font-bold text-text-primary mb-4">
+      Search Tips
+    </h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <h3 class="font-body text-sm font-semibold text-accent-blue mb-2">What You Can Search</h3>
+        <ul class="font-body text-sm text-text-secondary space-y-1">
+          <li>&bull; Brand names: "Samsung", "Apple", "Xiaomi"</li>
+          <li>&bull; Model series: "Galaxy S", "iPhone 15", "Redmi Note"</li>
+          <li>&bull; Features: "5G", "AMOLED display", "wireless charging"</li>
+          <li>&bull; Price ranges: "under $500", "budget phones", "premium"</li>
+          <li>&bull; Specifications: "512GB storage", "16GB RAM", "best camera"</li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="font-body text-sm font-semibold text-accent-blue mb-2">How It Works</h3>
+        <ul class="font-body text-sm text-text-secondary space-y-1">
+          <li>&bull; Powered by BGE-M3 embedding model</li>
+          <li>&bull; Understands semantic meaning, not just keywords</li>
+          <li>&bull; Ranks results by similarity score</li>
+          <li>&bull; Works with natural language queries</li>
+          <li>&bull; Minimum 2 characters required</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- JavaScript for example searches -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('[data-search-target="input"]');
+    const searchController = document.querySelector('[data-controller="search"]');
+
+    document.querySelectorAll('.example-search').forEach(function(element) {
+      element.addEventListener('click', function() {
+        const query = this.getAttribute('data-query');
+        if (searchInput && searchController) {
+          searchInput.value = query;
+          // Trigger the search action
+          searchController.dispatchEvent(new Event('submit'));
+        }
+      });
+    });
+  });
+</script>

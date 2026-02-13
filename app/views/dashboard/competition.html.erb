@@ -1,0 +1,166 @@
+<% content_for :title, "Competition" %>
+
+<div class="space-y-8">
+  <!-- Page Header -->
+  <header class="border-b border-border-color pb-4">
+    <h1 class="font-display text-4xl font-bold text-text-primary">
+      Competition Analysis
+    </h1>
+    <p class="font-body text-text-secondary mt-2">
+      Market share, brand positioning, and competitive landscape
+    </p>
+  </header>
+
+  <!-- Country Filter -->
+  <section class="bg-bg-tertiary border border-border-color rounded p-6">
+    <%= form_tag dashboard_competition_path, method: :get, class: "flex gap-4 items-end" do %>
+      <div class="flex-1">
+        <%= label_tag :country_id, "Filter by Country", class: "block font-body text-sm font-medium text-text-secondary mb-1" %>
+        <%= select_tag :country_id,
+                       options_from_collection_for_select(
+                         @countries,
+                         :id,
+                         :name,
+                       params[:country_id]
+                       ),
+                       include_blank: "All countries",
+                       onchange: "this.form.submit();",
+                       class: "w-full font-body text-base bg-bg-primary border border-border-color rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-accent-blue" %>
+      </div>
+    <% end %>
+  </section>
+
+  <!-- Market Share Section -->
+  <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Brand Market Share -->
+    <div class="bg-bg-tertiary border border-border-color rounded p-6">
+      <h2 class="font-display text-xl font-bold text-text-primary mb-4">
+        Brand Market Share
+      </h2>
+
+      <% if @market_analysis[:market_share].any? %>
+        <div class="space-y-4">
+          <% @market_analysis[:market_share].each do |brand, share| %>
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <span class="font-body text-sm font-medium text-text-primary"><%= brand %></span>
+                <span class="font-mono text-sm text-text-secondary"><%= share %>%</span>
+              </div>
+              <div class="w-full bg-bg-secondary rounded-full h-2">
+                <div class="bg-accent-blue h-2 rounded-full" style="width: <%= share %>%"></div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="font-body text-sm text-text-secondary text-center py-8">
+          No market share data available
+        </p>
+      <% end %>
+    </div>
+
+    <!-- Top Models -->
+    <div class="bg-bg-tertiary border border-border-color rounded p-6">
+      <h2 class="font-display text-xl font-bold text-text-primary mb-4">
+        Top Competing Models
+      </h2>
+
+      <% if @market_analysis[:top_models].any? %>
+        <div class="space-y-3 max-h-80 overflow-y-auto">
+          <% @market_analysis[:top_models].first(DashboardConstants::NEW_ENTRIES_DISPLAY_LIMIT).each do |model| %>
+            <div class="border-b border-border-color pb-3 last:border-b-0">
+              <div class="flex justify-between items-start">
+                <div class="flex-1">
+                  <p class="font-body text-sm font-medium text-text-primary">
+                    <%= model[:phone] %>
+                  </p>
+                  <p class="font-body text-xs text-text-tertiary mt-1">
+                    <%= model[:market_position].humanize %> &bull; <%= model[:competitor_count] %> competitors
+                  </p>
+                </div>
+                <div class="text-right">
+                  <p class="font-mono text-base font-semibold text-text-primary">
+                    $<%= number_with_delimiter(model[:price_avg], precision: 0) %>
+                  </p>
+                  <p class="font-body text-xs text-text-tertiary">
+                    <%= model[:price_points] %> price points
+                  </p>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="font-body text-sm text-text-secondary text-center py-8">
+          No model data available
+        </p>
+      <% end %>
+    </div>
+  </section>
+
+  <!-- New Entries -->
+  <% if @market_analysis[:new_entries].any? %>
+  <section class="bg-bg-tertiary border border-border-color rounded p-6">
+    <h2 class="font-display text-xl font-bold text-text-primary mb-4">
+      Recently Added Phones
+    </h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <% @market_analysis[:new_entries].each do |entry| %>
+        <div class="bg-bg-primary border border-border-color rounded p-4">
+          <h3 class="font-body text-base font-semibold text-text-primary mb-2">
+            <%= entry[:phone] %>
+          </h3>
+          <div class="space-y-1 text-sm">
+            <p class="font-body text-text-tertiary">
+              <span class="font-medium">Brand:</span> <%= entry[:brand] %>
+            </p>
+            <p class="font-body text-text-tertiary">
+              <span class="font-medium">First seen:</span> <%= entry[:first_seen] %>
+            </p>
+            <p class="font-body text-text-tertiary">
+              <span class="font-medium">Channels:</span> <%= entry[:channels] %>
+            </p>
+          </div>
+          <% if entry[:has_prices] %>
+            <span class="inline-block mt-2 badge badge--status-normal">With pricing</span>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </section>
+  <% end %>
+
+  <!-- Market Position Summary -->
+  <section class="bg-bg-secondary border border-border-color rounded p-6">
+    <h2 class="font-display text-xl font-bold text-text-primary mb-4">
+      Market Position Summary
+    </h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <%# Premium segment %>
+      <div class="text-center">
+        <p class="font-display text-3xl font-bold text-accent-purple mb-2">
+          <%= @market_analysis[:top_models].count { |m| m[:market_position] == 'premium' %>
+        </p>
+        <p class="font-body text-sm text-text-secondary">Premium Models ($<%= DashboardConstants::MARKET_POSITION_PREMIUM_THRESHOLD %>+)</p>
+      </div>
+
+      <%# Mid-range segment %>
+      <div class="text-center">
+        <p class="font-display text-3xl font-bold text-accent-blue mb-2">
+          <%= @market_analysis[:top_models].count { |m| m[:market_position] == 'mid-range' %>
+        </p>
+        <p class="font-body text-sm text-text-secondary">Mid-Range Models ($<%= DashboardConstants::MARKET_POSITION_MIDRANGE_THRESHOLD %>-999)</p>
+      </div>
+
+      <%# Budget segment %>
+      <div class="text-center">
+        <p class="font-display text-3xl font-bold text-accent-green mb-2">
+          <%= @market_analysis[:top_models].count { |m| m[:market_position] == 'budget' %>
+        </p>
+        <p class="font-body text-sm text-text-secondary">Budget Models (under $<%= DashboardConstants::MARKET_POSITION_MIDRANGE_THRESHOLD %>)</p>
+      </div>
+    </div>
+  </section>
+</div>
