@@ -6,6 +6,140 @@
 class RegionalPriceService
   include DashboardConstants
 
+  # Benchmark analysis for a specific phone or aggregate
+  # @param phone_id [Integer, nil] Phone ID for specific analysis, nil for aggregate
+  # @return [Hash] Benchmark and comparison data
+  def self.benchmark_analysis(phone_id = nil)
+    if phone_id.present?
+      analyze_phone_benchmark(phone_id.to_i)
+    else
+      analyze_aggregate_benchmark
+    end
+  end
+
+  # Analyze benchmark for a specific phone
+  def self.analyze_phone_benchmark(phone_id)
+    phone = Phone.find_by(id: phone_id)
+    return { error: "Phone not found" } unless phone
+
+    # Get UAE prices for this phone
+    uae_country = Country.find_by("LOWER(code) = ?", "ae")
+    return { error: "UAE country not found" } unless uae_country
+
+    uae_prices = MeppiTrade.where(phone_id: phone_id)
+                           .joins(:channel)
+                           .where(channels: { country_id: uae_country.id })
+                           .where.not(price_usd: [nil, 0])
+
+    return { error: "No UAE prices found for this phone" } if uae_prices.empty?
+
+    uae_wholesale = uae_prices.minimum(:price_usd) || 0
+    uae_retail = uae_prices.average(:price_usd) || 0
+
+    # Get regional comparisons
+    regional_prices = MeppiTrade.where(phone_id: phone_id)
+                                .joins(:channel)
+                                .includes(channel: :country)
+                                .where.not(price_usd: [nil, 0])
+
+    comparison = regional_prices.group_by { |t| t.channel&.country&.name }.map do |country_name, trades|
+      local_price = trades.map(&:price_usd).compact.min
+      discount = uae_wholesale.positive? ? ((uae_wholesale - local_price) / uae_wholesale * 100).round(1) : 0
+
+      {
+        country: country_name || "Unknown",
+        local_price: local_price,
+        uae_benchmark: uae_wholesale,
+        discount_percent: discount,
+        status: discount > 20 ? "critical" : (discount > 10 ? "warning" : "normal")
+      }
+    end.compact
+
+    # Generate alerts for prices significantly below benchmark
+    alerts = comparison.select { |c| c[:discount_percent] > 15 }.map do |c|
+      {
+        country: c[:country],
+        channel: "Various",
+        local_price: c[:local_price],
+        uae_benchmark: c[:uae_benchmark],
+        discount_percent: c[:discount_percent]
+      }
+    end
+
+    {
+      uae_benchmark: {
+        phone: phone.full_name,
+        wholesale_price: uae_wholesale,
+        retail_price: uae_retail,
+        vat_rate: 0.05
+      },
+      regional_comparison: comparison,
+      alerts: alerts
+    }
+  end
+
+  # Analyze aggregate benchmark across all phones
+  def self.analyze_aggregate_benchmark
+    uae_country = Country.find_by("LOWER(code) = ?", "ae")
+
+    # Get all phones with prices
+    phones_with_prices = Phone.joins(:meppi_trades).distinct
+
+    violations = []
+    countries_violations = Hash.new(0)
+
+    phones_with_prices.each do |phone|
+      # Get UAE benchmark
+      uae_prices = MeppiTrade.where(phone: phone)
+                             .joins(:channel)
+                             .where(channels: { country_id: uae_country&.id })
+                             .where.not(price_usd: [nil, 0])
+
+      next if uae_prices.empty?
+
+      uae_benchmark = uae_prices.minimum(:price_usd)
+
+      # Check other countries
+      MeppiTrade.where(phone: phone)
+                .joins(:channel)
+                .includes(channel: :country)
+                .where.not(price_usd: [nil, 0])
+                .group_by { |t| t.channel&.country&.name }
+                .each do |country_name, trades|
+        next if country_name == "United Arab Emirates"
+
+        local_price = trades.map(&:price_usd).compact.min
+        discount = uae_benchmark.positive? ? ((uae_benchmark - local_price) / uae_benchmark * 100).round(1) : 0
+
+        if discount > 10
+          violations << {
+            phone: phone.full_name,
+            country: country_name,
+            channel: trades.first&.channel&.name || "Unknown",
+            local_price: local_price,
+            uae_benchmark: uae_benchmark,
+            discount_percent: discount
+          }
+          countries_violations[country_name] += 1
+        end
+      end
+    end
+
+    # Sort violations by discount
+    violations = violations.sort_by { |v| -v[:discount_percent] }
+
+    {
+      summary: {
+        total_violations: violations.count,
+        affected_phones: violations.map { |v| v[:phone] }.uniq.count,
+        affected_countries: countries_violations.keys.count,
+        avg_discount: violations.any? ? (violations.sum { |v| v[:discount_percent] } / violations.count).round(1) : 0
+      },
+      top_violations: violations.first(50),
+      countries_by_violations: countries_violations.sort_by { |_, v| -v }.to_h
+    }
+  end
+
   # Compare prices to base country (UAE benchmark)
   # @param base_country_id [Integer] Base country ID for comparison
   # @param country_ids [Array<Integer>] Optional specific countries to compare

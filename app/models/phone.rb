@@ -2,6 +2,7 @@
 
 class Phone < ApplicationRecord
   has_many :prices, dependent: :destroy
+  has_many :meppi_trades, dependent: :destroy
   has_many :promotions, dependent: :destroy
   has_many :dubai_benchmarks, dependent: :destroy
   has_many :chunks, dependent: :destroy
