@@ -2,7 +2,7 @@
 
 Rails.application.routes.draw do
   # Root path - Dashboard
-  root 'dashboard#index'
+  root 'dashboard#home'
 
   # Trade CRUD API resources
   resources :trades, only: [:index, :show, :new, :create, :edit, :update, :destroy]

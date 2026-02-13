@@ -91,7 +91,7 @@ class DashboardController < ApplicationController
 
   # Set time range from params or default
   def set_time_range
-    30 = params[:period]&.to_i || DashboardConstants::DEFAULT_TIME_RANGE_DAYS
+    @time_range_days = params[:period]&.to_i || 30
   end
 
   # Handle errors with user-friendly message

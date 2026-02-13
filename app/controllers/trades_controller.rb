@@ -61,7 +61,7 @@ class TradesController < ApplicationController
   # DELETE /trades/:id - Delete trade
   def destroy
     trade = MeppiTrade.find(params[:id])
-    trade.destroy
+    trade.destroy!
 
     render json: { data: { message: 'Trade deleted' } }, status: :ok
   end

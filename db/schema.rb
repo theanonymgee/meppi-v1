@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_02_11_200001) do
+ActiveRecord::Schema[7.1].define(version: 2026_02_13_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "vector"
@@ -81,27 +81,13 @@ ActiveRecord::Schema[7.1].define(version: 2026_02_11_200001) do
     t.string "promo_code"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["channel_id"], name: "index_meppi_trades_on_channel_id"
-    t.index ["country_id"], name: "index_meppi_trades_on_country_id"
-    t.index ["phone_id"], name: "index_meppi_trades_on_phone_id"
   end
 
 # Could not dump table "phones" because of following StandardError
-#   Unknown type 'vector(1024)' for column 'embedding'
+#   Unknown type 'vector' for column 'embedding'
 
-  create_table "prices", force: :cascade do |t|
-    t.integer "phone_id"
-    t.bigint "channel_id", null: false
-    t.decimal "price_local"
-    t.decimal "price_usd"
-    t.string "price_type"
-    t.string "stock_status"
-    t.text "url"
-    t.date "date"
-    t.datetime "scraped_at"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
+# Could not dump table "prices" because of following StandardError
+#   Unknown type 'vector' for column 'embedding'
 
   create_table "promotions", force: :cascade do |t|
     t.bigint "channel_id", null: false
@@ -146,7 +132,6 @@ ActiveRecord::Schema[7.1].define(version: 2026_02_11_200001) do
   end
 
   add_foreign_key "channels", "countries"
-  add_foreign_key "chunks", "phones"
   add_foreign_key "dubai_benchmarks", "phones"
   add_foreign_key "exchange_rates", "countries"
   add_foreign_key "meppi_trades", "channels"
