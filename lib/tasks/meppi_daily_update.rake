@@ -41,8 +41,8 @@ namespace :meppi do
       puts "  ❌ Exchange rate update failed: #{e.message}"
     end
 
-    # Phase 2: Scrape Amazon.ae
-    puts "\n🛒️ Phase 2: Amazon.ae"
+    # Phase 2: SerpAPI (Google Shopping) - replaces blocked Amazon scraper
+    puts "\n🛒️ Phase 2: Google Shopping (via SerpAPI)"
     puts "-" * 60
 
     brands_to_scrape = ['samsung', 'apple', 'xiaomi', 'oppo', 'vivo', 'tecno', 'infinix', 'nokia']
@@ -50,18 +50,16 @@ namespace :meppi do
     begin
       brands_to_scrape.each do |brand|
         begin
-          page = 1
-          loop do
-            listings = AmazonAeScraperService.fetch_listings(brand:, page:)
-            break if listings.empty?
-
+          listings = SerpApiScraperService.fetch_phones(brand: brand, country: 'ae')
+          
+          if listings.any?
             listings.each do |product|
-              upsert_price(product, 'AE', 'Amazon.ae')
+              upsert_price(product, 'AE', product[:source] || 'Google Shopping')
               results[:scrapers][:amazon_ae][:collected] += 1
             end
-
-            page += 1
-            break if page > 5 # Max 5 pages per brand
+            puts "    ✅ #{brand}: #{listings.count} products"
+          else
+            puts "    ⚠️ #{brand}: 0 products"
           end
 
         rescue StandardError => e
@@ -70,10 +68,10 @@ namespace :meppi do
         end
       end
 
-      puts "  ✅ Amazon.ae: #{results[:scrapers][:amazon_ae][:collected]} products"
+      puts "  ✅ Google Shopping: #{results[:scrapers][:amazon_ae][:collected]} products"
 
     rescue StandardError => e
-      puts "  ❌ Amazon.ae scraping failed: #{e.message}"
+      puts "  ❌ SerpAPI scraping failed: #{e.message}"
     end
 
     # Phase 3: Scrape Noon (multi-country)

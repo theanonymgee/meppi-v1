@@ -1,36 +1,27 @@
-# PostgreSQL. Versions 9.3 and up are supported.
-#
-# Install the pg driver:
-#   gem install pg
-# On macOS with Homebrew:
-#   gem install pg -- --with-pg-config=/usr/local/bin/pg_config
-# On Windows:
-#   gem install pg
-#       Choose the win32 build.
-#       Install PostgreSQL and put its /bin directory on your path.
-#
-# Configure Using Gemfile
-# gem "pg"
-#
+# PostgreSQL configuration for meppi-rails
 default: &default
   adapter: postgresql
   encoding: unicode
-  # For details on connection pooling, see Rails configuration guide
-  # https://guides.rubyonrails.org/configuring.html#database-pooling
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
+  timeout: 5000
 
 development:
   <<: *default
   database: meppi_rails_development
-  username: theanonymgee
-  password:
+  host: <%= ENV.fetch("POSTGRES_HOST", "localhost") %>
+  port: <%= ENV.fetch("POSTGRES_PORT", 5432) %>
+  username: <%= ENV.fetch("POSTGRES_USER", "meppi_rails") %>
+  password: <%= ENV.fetch("POSTGRES_PASSWORD", "") %>
 
 test:
   <<: *default
   database: meppi_rails_test
+  host: <%= ENV.fetch("POSTGRES_HOST", "localhost") %>
+  port: <%= ENV.fetch("POSTGRES_PORT", 5432) %>
+  username: <%= ENV.fetch("POSTGRES_USER", "meppi_rails") %>
+  password: <%= ENV.fetch("POSTGRES_PASSWORD", "") %>
 
 production:
   <<: *default
-  database: meppi_rails_development
-  username: meppi_rails
-  password: <%= ENV["MEPPI_RAILS_DATABASE_PASSWORD"] %>
+  database: meppi_rails_production
+  url: <%= ENV.fetch("DATABASE_URL") %>

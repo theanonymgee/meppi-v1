@@ -5,8 +5,10 @@
 class BgeM3Client
   class Error < StandardError; end
 
+  EMBEDDING_DIM = 1024
+
   def initialize(base_url: nil, timeout: nil)
-    @base_url = base_url || ENV.fetch('BGE_M3_SERVER_URL', 'http://127.0.0.1:8001')
+    @base_url = base_url || ENV.fetch('BGE_M3_SERVER_URL', 'http://127.0.0.1:8002')
     @timeout = timeout || ENV.fetch('BGE_M3_TIMEOUT', '30').to_i
   end
 
@@ -17,7 +19,7 @@ class BgeM3Client
     raise ArgumentError, 'Text cannot be empty' if text.blank?
     raise ArgumentError, 'Text must be a String' unless text.is_a?(String)
 
-    response = connection.post('/embeddings') do |req|
+    response = connection.post('/api/v1/embed') do |req|
       req.headers['Content-Type'] = 'application/json'
       req.body = { text: text }.to_json
     end
@@ -32,7 +34,7 @@ class BgeM3Client
     raise ArgumentError, 'Texts cannot be empty' if texts.blank?
     raise ArgumentError, 'Texts must be an Array' unless texts.is_a?(Array)
 
-    response = connection.post('/embeddings/batch') do |req|
+    response = connection.post('/api/v1/embed/batch') do |req|
       req.headers['Content-Type'] = 'application/json'
       req.body = { texts: texts }.to_json
     end
@@ -65,7 +67,12 @@ class BgeM3Client
     case response.status
     when 200..299
       data = JSON.parse(response.body)
-      data['embedding']
+      # New API format: { success: true, data: { embedding: [...] } }
+      if data.is_a?(Hash) && data['data']
+        data['data']['embedding']
+      else
+        data['embedding']
+      end
     when 400
       raise Error, "Bad Request: #{response.body}"
     when 503
@@ -83,7 +90,12 @@ class BgeM3Client
     case response.status
     when 200..299
       data = JSON.parse(response.body)
-      data.map { |item| item['embedding'] }
+      # New API format: { success: true, data: { embeddings: [[...], [...]] } }
+      if data.is_a?(Hash) && data['data']
+        data['data']['embeddings']
+      else
+        data.map { |item| item['embedding'] }
+      end
     when 400
       raise Error, "Bad Request: #{response.body}"
     when 503

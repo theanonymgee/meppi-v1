@@ -1,55 +1,77 @@
 # frozen_string_literal: true
 
 # Service for semantic search using pgvector cosine similarity
-# Supports natural language search and similar item discovery
+# Supports natural language search on chunks (price data)
 class SemanticSearchService
   class SearchError < StandardError; end
 
-  # Search phones by semantic similarity using natural language query
+  # Search chunks by semantic similarity using natural language query
   # @param query [String] Natural language search query
   # @param country_id [Integer, nil] Optional country filter
   # @param limit [Integer] Maximum number of results
-  # @param threshold [Float] Minimum similarity threshold 0-1 (default: 0.7)
-  # @return [Array<Phone>] Similar phones ordered by relevance
-  def self.search_phones(query, country_id: nil, limit: 10, threshold: 0.7)
+  # @param threshold [Float] Minimum similarity threshold 0-1 (default: 0.3 for broader results)
+  # @return [Array<Hash>] Similar chunks with phone info ordered by relevance
+  def self.search_phones(query, country_id: nil, limit: 10, threshold: 0.3)
     raise SearchError, "Query cannot be empty" if query.blank?
 
-    # 1. 쿼리에서 임베딩 생성 (BGE-M3)
-    query_embedding = EmbeddingService.embed(query)
+    # 1. Generate embedding for query using BgeM3Client
+    client = BgeM3Client.new
+    query_embedding = client.generate(query)
 
-    # 2. 유사도 기반 거리 임계값 계산 (cosine distance = 1 - cosine similarity)
+    # 2. Calculate distance threshold (cosine distance = 1 - cosine similarity)
     distance_threshold = 1 - threshold
 
-    # 3. pgvector 코사인 유사도 검색 (Raw SQL 사용)
-    embedding_str = "[#{query_embedding.join(',')}]"
+    # 3. pgvector cosine similarity search on chunks
+    embedding_str = "[#{query_embedding.map { |v| v.to_f }.join(',')}]"
 
-    # 거리 임계값을 적용하여 필터링
+    # Search chunks with embeddings and get similarity scores
+    # Note: chunks uses polymorphic associations (chunkable_type, chunkable_id)
     sql = <<~SQL.squish
-      SELECT id FROM phones
-      WHERE embedding IS NOT NULL
-        AND embedding <=> '#{embedding_str}'::vector < #{distance_threshold}
-      ORDER BY embedding <=> '#{embedding_str}'::vector
+      SELECT
+        c.id as chunk_id,
+        c.content,
+        c.chunkable_type,
+        c.chunkable_id,
+        1 - (c.embedding <=> '#{embedding_str}'::vector) as similarity
+      FROM chunks c
+      WHERE c.embedding IS NOT NULL
+        AND (c.embedding <=> '#{embedding_str}'::vector) < #{distance_threshold}
+      ORDER BY c.embedding <=> '#{embedding_str}'::vector
       LIMIT #{limit.to_i}
     SQL
 
-    phone_ids = ActiveRecord::Base.connection.execute(sql).map { |row| row['id'] }
-
-    # 4. Phone 객체 로드
-    similar_phones = Phone.where(id: phone_ids).to_a
-
-    # 5. 국가 필터링 (선택사항)
-    if country_id.present?
-      country_phone_ids = Price.joins(:channel)
-                             .where(channels: { country_id: country_id })
-                             .pluck(:phone_id)
-
-      similar_phones = similar_phones.select { |p| country_phone_ids.include?(p.id) }
+    results = ActiveRecord::Base.connection.execute(sql).map do |row|
+      {
+        id: row['chunkable_id'] || row['chunk_id'],
+        chunk_id: row['chunk_id'],
+        brand: extract_brand(row['content']),
+        model: nil,
+        full_name: extract_phone_name(row['content']),
+        content: row['content'],
+        display_size: nil,
+        storage: nil,
+        similarity: row['similarity']&.round(4) || 0.5
+      }
     end
 
-    similar_phones
-  rescue EmbeddingService::EmbeddingError => e
+    results
+  rescue BgeM3Client::Error => e
     Rails.logger.error "Semantic search failed: #{e.message}"
     raise SearchError, 'Failed to perform semantic search'
+  end
+
+  # Extract phone name from chunk content
+  def self.extract_phone_name(content)
+    # Content format: "Samsung Galaxy S25 FE - du - 2999 AED (manual)"
+    content.split(' - ').first&.strip || content[0..50]
+  end
+
+  # Extract brand from chunk content
+  def self.extract_brand(content)
+    phone_name = extract_phone_name(content)
+    # Common brands
+    brands = ['Samsung', 'Apple', 'iPhone', 'Xiaomi', 'OPPO', 'vivo', 'OnePlus', 'Google', 'Huawei', 'Realme']
+    brands.find { |b| phone_name&.include?(b) } || phone_name&.split&.first || 'Unknown'
   end
 
   # Find similar phones based on embedding similarity

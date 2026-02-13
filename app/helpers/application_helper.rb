@@ -8,7 +8,7 @@ module ApplicationHelper
 
   def dashboard_channel_path(phone_id = nil)
     if phone_id.present?
-      '/dashboard/channel_strategy?phone_id=%<phone_id%'
+      "/dashboard/channel_strategy?phone_id=#{phone_id}"
     else
       '/dashboard/channel_strategy'
     end
@@ -16,7 +16,7 @@ module ApplicationHelper
 
   def dashboard_competition_path(country_id = nil)
     if country_id.present?
-      '/dashboard/competition?country_id=%<country_id>%'
+      "/dashboard/competition?country_id=#{country_id}"
     else
       '/dashboard/competition'
     end
@@ -24,7 +24,7 @@ module ApplicationHelper
 
   def dashboard_promotions_path(country_id = nil)
     if country_id.present?
-      '/dashboard/promotions?country_id=%<country_id>%'
+      "/dashboard/promotions?country_id=#{country_id}"
     else
       '/dashboard/promotions'
     end
@@ -32,7 +32,7 @@ module ApplicationHelper
 
   def dashboard_regional_prices_path(phone_id = nil)
     if phone_id.present?
-      '/dashboard/regional_prices?phone_id=%<phone_id>%'
+      "/dashboard/regional_prices?phone_id=#{phone_id}"
     else
       '/dashboard/regional_prices'
     end

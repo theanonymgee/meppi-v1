@@ -20,22 +20,21 @@
   <%= csp_meta_tag %>
 
   <!-- Tailwind CSS -->
-  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
 
-  <!-- Importmap -->
+  <!-- JavaScript - Direct importmap -->
   <script type="importmap">
   {
     "imports": {
-      "application": "/assets/application.js",
-      "@hotwired/turbo-rails": "/assets/turbo.min.js",
-      "@hotwired/stimulus": "/assets/stimulus.min.js",
-      "@hotwired/stimulus-loading": "/assets/stimulus-loading.js",
-      "chart.js": "https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js",
-      "controllers": "/assets/controllers"
+      "@hotwired/turbo": "https://cdn.jsdelivr.net/npm/@hotwired/turbo@8.0.4/dist/turbo.es2017-esm.min.js",
+      "@hotwired/stimulus": "https://cdn.jsdelivr.net/npm/@hotwired/stimulus@3.2.2/dist/stimulus.min.js"
     }
   }
   </script>
-  <script type="module" src="/assets/application.js"></script>
+  <script type="module">
+    import * as Turbo from "@hotwired/turbo";
+    Turbo.start();
+  </script>
 </head>
 
 <body class="bg-bg-primary text-text-primary font-body antialiased min-h-screen flex flex-col">

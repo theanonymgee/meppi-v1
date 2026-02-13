@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
 # Pgvector configuration
-# Register vector type with ActiveRecord for proper schema handling
-# Note: The vector columns are stored in PostgreSQL and accessed as strings
+# The pgvector gem is used for vector similarity search
 
-# For now, we'll access embedding columns as text and parse them when needed
-# The pgvector gem handles the conversion automatically in queries
+# Note: We use raw SQL for vector operations since ActiveRecord integration
+# can be tricky. The embedding column is stored as a vector type in PostgreSQL.

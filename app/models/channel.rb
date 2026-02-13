@@ -2,6 +2,7 @@
 
 class Channel < ApplicationRecord
   self.primary_key = :id
+  self.inheritance_column = nil  # Disable STI to use 'type' column normally
 
   # Associations
   belongs_to :country
@@ -11,11 +12,11 @@ class Channel < ApplicationRecord
 
   # Validations
   validates :name, presence: true
-  validates :channel_type, presence: true
+  validates :type, presence: true
   validates :country_id, presence: true
 
-  # Enumerations
-  enum channel_type: {
+  # Enumerations - using 'type' column (disabled STI above)
+  enum type: {
     telco: ChannelConstants::TELCO,
     retail: ChannelConstants::RETAIL,
     pure_player: ChannelConstants::PURE_PLAYER,

@@ -13,7 +13,7 @@
 
   <!-- Search Interface -->
   <section class="bg-bg-tertiary border border-border-color rounded p-8">
-    <div data-controller="search" data-search-url-value="/api/v1/semantic_search">
+    <div id="search-container">
       <label for="search-input" class="block font-display text-lg font-semibold text-text-primary mb-3">
         Search for phones
       </label>
@@ -23,8 +23,6 @@
           <input
             id="search-input"
             type="search"
-            data-search-target="input"
-            data-action="keydown->search#onEnter"
             placeholder="e.g., 'Samsung phones under $600' or 'iPhones with best camera'"
             class="w-full font-body text-base bg-bg-primary border border-border-color rounded-lg px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-accent-blue focus:border-transparent"
             autofocus
@@ -34,10 +32,7 @@
           </svg>
         </div>
 
-        <button
-          data-action="click->search#search"
-          class="btn btn--primary px-6 py-3"
-        >
+        <button id="search-button" class="btn btn--primary px-6 py-3">
           <span class="flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -53,7 +48,7 @@
     </div>
 
     <!-- Loading Indicator -->
-    <div data-search-target="loading" class="hidden mt-6 text-center">
+    <div id="loading-indicator" class="hidden mt-6 text-center">
       <div class="inline-flex items-center gap-3">
         <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-accent-blue"></div>
         <span class="font-body text-base text-text-secondary">Searching...</span>
@@ -61,9 +56,9 @@
     </div>
 
     <!-- Search Results -->
-    <div data-search-target="results" class="mt-6">
+    <div id="results-container" class="mt-6">
       <!-- Initial help text -->
-      <div class="text-center py-12">
+      <div id="initial-help" class="text-center py-12">
         <svg class="mx-auto w-16 h-16 text-text-tertiary mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
         </svg>
@@ -74,6 +69,33 @@
           Use natural language to find phones. Our AI-powered search understands context, brands, features, and price ranges.
         </p>
       </div>
+
+      <!-- Results will be inserted here -->
+      <div id="search-results" class="hidden space-y-4"></div>
+
+      <!-- No results message -->
+      <div id="no-results" class="hidden text-center py-12">
+        <svg class="mx-auto w-16 h-16 text-accent-amber mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+        </svg>
+        <h3 class="font-display text-xl font-semibold text-text-primary mb-2">
+          No Results Found
+        </h3>
+        <p class="font-body text-base text-text-secondary">
+          Try a different search term or be more specific.
+        </p>
+      </div>
+
+      <!-- Error message -->
+      <div id="error-message" class="hidden text-center py-12">
+        <svg class="mx-auto w-16 h-16 text-accent-red mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <h3 class="font-display text-xl font-semibold text-accent-red mb-2">
+          Search Error
+        </h3>
+        <p id="error-text" class="font-body text-base text-text-secondary"></p>
+      </div>
     </div>
   </section>
 
@@ -82,109 +104,189 @@
     <h2 class="font-display text-lg font-bold text-text-primary mb-4">Example Searches</h2>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <div class="bg-bg-primary border border-border-color rounded p-4 hover:shadow-card-hover transition-shadow duration-150 cursor-pointer example-search" data-query="Samsung Galaxy S series">
+      <div class="bg-bg-primary border border-border-color rounded p-4 hover:shadow-card-hover transition-shadow duration-150 cursor-pointer example-search" data-query="Samsung Galaxy">
         <h3 class="font-body text-sm font-semibold text-text-primary mb-1">
-          "Samsung Galaxy S series"
+          "Samsung Galaxy"
         </h3>
         <p class="font-body text-xs text-text-tertiary">
-          Find all Samsung Galaxy S models
+          Find all Samsung Galaxy models
         </p>
       </div>
 
-      <div class="bg-bg-primary border border-border-color rounded p-4 hover:shadow-card-hover transition-shadow duration-150 cursor-pointer example-search" data-query="iPhones under $700">
+      <div class="bg-bg-primary border border-border-color rounded p-4 hover:shadow-card-hover transition-shadow duration-150 cursor-pointer example-search" data-query="iPhone">
         <h3 class="font-body text-sm font-semibold text-text-primary mb-1">
-          "iPhones under $700"
+          "iPhone"
         </h3>
         <p class="font-body text-xs text-text-tertiary">
-          Budget-friendly iPhone options
+          Apple iPhone models
         </p>
       </div>
 
-      <div class="bg-bg-primary border border-border-color rounded p-4 hover:shadow-card-hover transition-shadow duration-150 cursor-pointer example-search" data-query="5G phones with best camera">
+      <div class="bg-bg-primary border border-border-color rounded p-4 hover:shadow-card-hover transition-shadow duration-150 cursor-pointer example-search" data-query="Xiaomi Redmi">
         <h3 class="font-body text-sm font-semibold text-text-primary mb-1">
-          "5G phones with best camera"
+          "Xiaomi Redmi"
         </h3>
         <p class="font-body text-xs text-text-tertiary">
-          High-end camera phones
+          Xiaomi Redmi series
         </p>
       </div>
 
-      <div class="bg-bg-primary border border-border-color rounded p-4 hover:shadow-card-hover transition-shadow duration-150 cursor-pointer example-search" data-query="budget Android phones">
+      <div class="bg-bg-primary border border-border-color rounded p-4 hover:shadow-card-hover transition-shadow duration-150 cursor-pointer example-search" data-query="Samsung S25 Ultra">
         <h3 class="font-body text-sm font-semibold text-text-primary mb-1">
-          "budget Android phones"
+          "Samsung S25 Ultra"
         </h3>
         <p class="font-body text-xs text-text-tertiary">
-          Affordable Android options
+          Latest Samsung flagship
         </p>
       </div>
 
-      <div class="bg-bg-primary border border-border-color rounded p-4 hover:shadow-card-hover transition-shadow duration-150 cursor-pointer example-search" data-query="flagship phones 2024">
+      <div class="bg-bg-primary border border-border-color rounded p-4 hover:shadow-card-hover transition-shadow duration-150 cursor-pointer example-search" data-query="budget phone">
         <h3 class="font-body text-sm font-semibold text-text-primary mb-1">
-          "flagship phones 2024"
+          "budget phone"
         </h3>
         <p class="font-body text-xs text-text-tertiary">
-          Latest premium models
+          Affordable phone options
         </p>
       </div>
 
-      <div class="bg-bg-primary border border-border-color rounded p-4 hover:shadow-card-hover transition-shadow duration-150 cursor-pointer example-search" data-query="phones with 1TB storage">
+      <div class="bg-bg-primary border border-border-color rounded p-4 hover:shadow-card-hover transition-shadow duration-150 cursor-pointer example-search" data-query="flagship">
         <h3 class="font-body text-sm font-semibold text-text-primary mb-1">
-          "phones with 1TB storage"
+          "flagship"
         </h3>
         <p class="font-body text-xs text-text-tertiary">
-          Maximum storage capacity
+          Premium models
         </p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Search Tips -->
-  <section class="bg-bg-tertiary border border-border-color rounded p-6">
-    <h2 class="font-display text-lg font-bold text-text-primary mb-4">
-      Search Tips
-    </h2>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div>
-        <h3 class="font-body text-sm font-semibold text-accent-blue mb-2">What You Can Search</h3>
-        <ul class="font-body text-sm text-text-secondary space-y-1">
-          <li>&bull; Brand names: "Samsung", "Apple", "Xiaomi"</li>
-          <li>&bull; Model series: "Galaxy S", "iPhone 15", "Redmi Note"</li>
-          <li>&bull; Features: "5G", "AMOLED display", "wireless charging"</li>
-          <li>&bull; Price ranges: "under $500", "budget phones", "premium"</li>
-          <li>&bull; Specifications: "512GB storage", "16GB RAM", "best camera"</li>
-        </ul>
-      </div>
-
-      <div>
-        <h3 class="font-body text-sm font-semibold text-accent-blue mb-2">How It Works</h3>
-        <ul class="font-body text-sm text-text-secondary space-y-1">
-          <li>&bull; Powered by BGE-M3 embedding model</li>
-          <li>&bull; Understands semantic meaning, not just keywords</li>
-          <li>&bull; Ranks results by similarity score</li>
-          <li>&bull; Works with natural language queries</li>
-          <li>&bull; Minimum 2 characters required</li>
-        </ul>
       </div>
     </div>
   </section>
 </div>
 
-<!-- JavaScript for example searches -->
+<!-- Vanilla JavaScript for search functionality -->
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.querySelector('[data-search-target="input"]');
-    const searchController = document.querySelector('[data-controller="search"]');
+(function() {
+  var searchInput = document.getElementById('search-input');
+  var searchButton = document.getElementById('search-button');
+  var loadingIndicator = document.getElementById('loading-indicator');
+  var resultsContainer = document.getElementById('search-results');
+  var initialHelp = document.getElementById('initial-help');
+  var noResults = document.getElementById('no-results');
+  var errorMessage = document.getElementById('error-message');
+  var errorText = document.getElementById('error-text');
 
-    document.querySelectorAll('.example-search').forEach(function(element) {
-      element.addEventListener('click', function() {
-        const query = this.getAttribute('data-query');
-        if (searchInput && searchController) {
-          searchInput.value = query;
-          // Trigger the search action
-          searchController.dispatchEvent(new Event('submit'));
-        }
-      });
+  function escapeHtml(text) {
+    var div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function performSearch(query) {
+    if (!query || query.trim().length < 2) {
+      alert('Please enter at least 2 characters');
+      return;
+    }
+
+    // Show loading state
+    loadingIndicator.classList.remove('hidden');
+    initialHelp.classList.add('hidden');
+    resultsContainer.classList.add('hidden');
+    noResults.classList.add('hidden');
+    errorMessage.classList.add('hidden');
+
+    fetch('/api/v1/semantic_search', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({ query: query, limit: 10 })
+    })
+    .then(function(response) {
+      if (!response.ok) {
+        throw new Error('Search request failed: ' + response.status);
+      }
+      return response.json();
+    })
+    .then(function(data) {
+      loadingIndicator.classList.add('hidden');
+
+      if (data.data && data.data.length > 0) {
+        displayResults(data.data);
+      } else {
+        noResults.classList.remove('hidden');
+      }
+    })
+    .catch(function(error) {
+      loadingIndicator.classList.add('hidden');
+      errorMessage.classList.remove('hidden');
+      errorText.textContent = error.message;
+      console.error('Search error:', error);
+    });
+  }
+
+  function displayResults(results) {
+    resultsContainer.innerHTML = '';
+    resultsContainer.classList.remove('hidden');
+
+    results.forEach(function(result) {
+      var similarity = (result.similarity * 100).toFixed(1);
+      var card = document.createElement('div');
+      card.className = 'bg-bg-primary border border-border-color rounded p-4 hover:shadow-card-hover transition-shadow duration-150';
+
+      var flexDiv = document.createElement('div');
+      flexDiv.className = 'flex justify-between items-start';
+
+      var contentDiv = document.createElement('div');
+      contentDiv.className = 'flex-1';
+
+      var title = document.createElement('h3');
+      title.className = 'font-display text-lg font-semibold text-text-primary';
+      title.textContent = result.full_name || 'Unknown Phone';
+
+      var brand = document.createElement('p');
+      brand.className = 'font-body text-sm text-text-secondary mt-1';
+      brand.textContent = result.brand || '';
+
+      var desc = document.createElement('p');
+      desc.className = 'font-body text-xs text-text-tertiary mt-2';
+      desc.textContent = (result.content || '').substring(0, 150) + '...';
+
+      contentDiv.appendChild(title);
+      contentDiv.appendChild(brand);
+      contentDiv.appendChild(desc);
+
+      var scoreDiv = document.createElement('div');
+      scoreDiv.className = 'ml-4 text-right';
+
+      var score = document.createElement('span');
+      score.className = 'inline-block bg-accent-blue/10 text-accent-blue font-mono text-sm px-2 py-1 rounded';
+      score.textContent = similarity + '% match';
+
+      scoreDiv.appendChild(score);
+      flexDiv.appendChild(contentDiv);
+      flexDiv.appendChild(scoreDiv);
+      card.appendChild(flexDiv);
+      resultsContainer.appendChild(card);
+    });
+  }
+
+  // Event listeners
+  searchButton.addEventListener('click', function() {
+    performSearch(searchInput.value);
+  });
+
+  searchInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      performSearch(searchInput.value);
+    }
+  });
+
+  // Example search clicks
+  document.querySelectorAll('.example-search').forEach(function(element) {
+    element.addEventListener('click', function() {
+      var query = this.getAttribute('data-query');
+      searchInput.value = query;
+      performSearch(query);
     });
   });
+})();
 </script>
