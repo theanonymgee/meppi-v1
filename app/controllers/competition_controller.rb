@@ -18,7 +18,7 @@ class CompetitionController < ApplicationController
   # Phone comparison view
   def compare
     phone_ids = params[:phone_ids]&.split(',')&.map(&:to_i)&.reject(&:zero?)
-    @phones = Phone.select(:id, :brand, :model).order(:brand, :model).page(params[:page]).per(20)
+    @phones = Phone.select(:id, :brand, :model).order(:brand, :model).limit(100)
 
     if phone_ids.present? && phone_ids.length >= COMPARISON_MIN_PHONES && phone_ids.length <= COMPARISON_MAX_PHONES
       @comparison_data = CompetitionService.compare_phones(phone_ids)
@@ -38,6 +38,6 @@ class CompetitionController < ApplicationController
   def handle_error(exception, context)
     Rails.logger.error("#{context}: #{exception.message}")
     flash[:alert] = "#{context.humanize} failed: #{exception.message}"
-    redirect_to competition_path
+    redirect_to competition_list_path
   end
 end

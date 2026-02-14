@@ -16,9 +16,19 @@ Rails.application.routes.draw do
   get '/dashboard/regional_prices', to: 'dashboard#regional_prices', as: 'dashboard_regional_prices'
 
   # Feature routes
-  resources :competition, only: [:index, :show]
+  resources :competition, only: [:index, :show] do
+    collection do
+      get :compare
+    end
+  end
   resources :promotion, only: [:index, :show]
   resources :regional_price, only: [:index, :show]
+
+  # Named routes for error redirects
+  get '/competition', to: 'competition#index', as: 'competition_list'
+  get '/promotion', to: 'promotion#index', as: 'promotion_list'
+  get '/regional_price', to: 'regional_price#index', as: 'regional_price_list'
+
   get '/channel-comparison', to: 'channel_comparison#index'
 
   # MEPI special routes

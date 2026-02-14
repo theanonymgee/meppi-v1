@@ -2,8 +2,9 @@
 
 FactoryBot.define do
   factory :chunk do
-    association :phone
+    association :chunkable, factory: :phone
     content { "Test chunk content" }
-    tokens { 100 }
+    chunk_index { 0 }
+    metadata { {} }
   end
 end

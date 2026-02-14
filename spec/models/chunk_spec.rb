@@ -6,10 +6,14 @@ require 'rails_helper'
 # Vibe Coding: Consistent test naming, descriptive behavior
 RSpec.describe Chunk, type: :model do
   let(:phone) { create(:phone) }
-  let(:chunk) { create(:chunk, phone: phone, content: 'Test content', tokens: 100) }
+  let(:chunk) { create(:chunk, chunkable: phone, content: 'Test content') }
 
   describe 'associations' do
-    it 'belongs to a phone' do
+    it 'belongs to a chunkable (polymorphic)' do
+      expect(chunk.chunkable).to eq(phone)
+    end
+
+    it 'can access phone through convenience method' do
       expect(chunk.phone).to eq(phone)
     end
   end

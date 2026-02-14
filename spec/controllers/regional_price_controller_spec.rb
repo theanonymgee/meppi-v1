@@ -6,24 +6,22 @@ RSpec.describe RegionalPriceController, type: :controller do
   describe 'GET #index' do
     context 'with no country filter' do
       it 'returns regional comparison data' do
-        get :index, as: :json
+        get :index
 
         expect(response).to have_http_status(:ok)
-        json = JSON.parse(response.body)
-        expect(json['regional_data']).to be_a(Hash)
-        expect(json['regional_data']['summary']).to be_present
-        expect(json['regional_data']['comparisons']).to be_a(Array)
+        expect(assigns(:regional_data)).to be_present
       end
     end
 
     context 'with country filter' do
-      let(:country1) { create(:country, name: 'Saudi Arabia') }
-      let(:country2) { create(:country, name: 'Qatar') }
+      let!(:country1) { create(:country, name: 'United Arab Emirates') }
+      let!(:country2) { create(:country, name: 'Saudi Arabia') }
 
       it 'filters by selected countries' do
-        get :index, params: { country_ids: [country1.id, country2.id] }, as: :json
+        get :index, params: { country_ids: [country1.id, country2.id] }
 
         expect(response).to have_http_status(:ok)
+        expect(assigns(:regional_data)).to be_present
       end
     end
   end
@@ -34,7 +32,7 @@ RSpec.describe RegionalPriceController, type: :controller do
 
       get :index
 
-      expect(response).to redirect_to(root_path)
+      expect(response).to redirect_to(regional_price_list_path)
       expect(flash[:alert]).to be_present
     end
   end

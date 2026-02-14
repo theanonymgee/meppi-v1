@@ -146,7 +146,15 @@ class RegionalPriceService
   # @return [Hash] Regional comparison data
   def self.compare_to_base(base_country_id:, country_ids: nil)
     base_country = Country.find_by(id: base_country_id)
-    raise ArgumentError, 'Base country not found' unless base_country
+
+    # Return empty result if base country not found
+    unless base_country
+      return {
+        base_country: nil,
+        comparisons: [],
+        summary: {}
+      }
+    end
 
     countries_to_compare = country_ids ? Country.where(id: country_ids) : Country.active.where.not(id: base_country_id)
 

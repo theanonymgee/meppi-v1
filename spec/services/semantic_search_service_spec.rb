@@ -21,6 +21,9 @@ RSpec.describe SemanticSearchService, type: :service do
     end
 
     it 'raises SearchError on embedding service failure' do
+      # Mock BgeM3Client to raise an error
+      allow_any_instance_of(BgeM3Client).to receive(:generate).and_raise(BgeM3Client::Error.new('Connection failed'))
+
       expect {
         SemanticSearchService.search_phones('test query')
       }.to raise_error(SemanticSearchService::SearchError)

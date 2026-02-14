@@ -3,7 +3,7 @@
 # Chunk model for storing text chunks with pgvector embeddings
 # Used for semantic search on phone descriptions, channel descriptions, etc.
 class Chunk < ApplicationRecord
-  belongs_to :phone
+  belongs_to :chunkable, polymorphic: true
 
   validates :content, presence: true
 
@@ -11,7 +11,7 @@ class Chunk < ApplicationRecord
   # has_neighbors :embedding  # Uncomment when pgvector gem is properly configured
 
   # Scopes
-  scope :by_phone, ->(phone_id) { where(phone_id:) }
+  scope :by_phone, ->(phone_id) { where(chunkable_type: 'Phone', chunkable_id: phone_id) }
   scope :recent, -> { order(created_at: :desc) }
 
   # Find similar chunks using pgvector cosine similarity
@@ -25,5 +25,10 @@ class Chunk < ApplicationRecord
     where('1 - (embedding <=> ?) >= ?', embedding, threshold)
       .limit(limit)
       .order('1 - (embedding <=> ?) DESC', embedding)
+  end
+
+  # Convenience method to get phone when chunkable is a Phone
+  def phone
+    chunkable if chunkable_type == 'Phone'
   end
 end

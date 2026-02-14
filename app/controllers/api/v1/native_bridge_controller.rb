@@ -8,10 +8,10 @@ module Api
       def navigation
         render json: {
           tabs: [
-            { id: 'channel', label: 'Channel Price', path: channel_comparison_path },
-            { id: 'competition', label: 'Competition', path: competition_path },
-            { id: 'promotion', label: 'Promotion', path: promotion_path },
-            { id: 'regional', label: 'Regional', path: regional_price_path }
+            { id: 'channel', label: 'Channel Price', path: '/dashboard/channel_comparison' },
+            { id: 'competition', label: 'Competition', path: '/competition' },
+            { id: 'promotion', label: 'Promotion', path: '/promotion' },
+            { id: 'regional', label: 'Regional', path: '/regional_price' }
           ]
         }
       end

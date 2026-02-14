@@ -6,32 +6,33 @@ RSpec.describe PromotionController, type: :controller do
   describe 'GET #index' do
     context 'with no filters' do
       it 'returns promotion data' do
-        get :index, as: :json
+        get :index
 
         expect(response).to have_http_status(:ok)
-        json = JSON.parse(response.body)
-        expect(json['discount_rankings']).to be_a(Array)
-        expect(json['active_count']).to be_a(Numeric)
+        expect(assigns(:discount_rankings)).to be_a(Array)
+        expect(assigns(:active_count)).to be_a(Numeric)
       end
     end
 
     context 'with country filter' do
-      let(:country) { create(:country, name: 'United Arab Emirates') }
+      let!(:country) { create(:country, name: 'United Arab Emirates') }
 
       it 'filters by country' do
-        get :index, params: { country_id: country.id }, as: :json
+        get :index, params: { country_id: country.id }
 
         expect(response).to have_http_status(:ok)
+        expect(assigns(:discount_rankings)).to be_a(Array)
       end
     end
 
     context 'with brand filter' do
-      let(:phone) { create(:phone, brand: 'Samsung') }
+      let!(:phone) { create(:phone, brand: 'Samsung') }
 
       it 'filters by brand' do
-        get :index, params: { brand_id: phone.brand }, as: :json
+        get :index, params: { brand_id: phone.brand }
 
         expect(response).to have_http_status(:ok)
+        expect(assigns(:discount_rankings)).to be_a(Array)
       end
     end
   end
@@ -42,7 +43,7 @@ RSpec.describe PromotionController, type: :controller do
 
       get :index
 
-      expect(response).to redirect_to(root_path)
+      expect(response).to redirect_to(promotion_list_path)
       expect(flash[:alert]).to be_present
     end
   end

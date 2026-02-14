@@ -85,6 +85,9 @@ group :test do
   # Code coverage
   gem 'simplecov', require: false
 
+  # Controller testing helpers (assigns, etc.)
+  gem 'rails-controller-testing'
+
   # VCR for HTTP request recording
   gem 'vcr'
   gem 'webmock'

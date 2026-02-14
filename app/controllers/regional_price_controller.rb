@@ -27,6 +27,6 @@ class RegionalPriceController < ApplicationController
   def handle_error(exception, context)
     Rails.logger.error("#{context}: #{exception.message}")
     flash[:alert] = "#{context.humanize} failed: #{exception.message}"
-    redirect_to regional_price_path
+    redirect_to regional_price_list_path
   end
 end

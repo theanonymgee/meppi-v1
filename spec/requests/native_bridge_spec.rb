@@ -13,17 +13,17 @@ RSpec.describe "NativeBridgeController" do
       expect(json['tabs']).to be_a(Array)
       expect(json['tabs'].length).to eq(4)
 
-      # Verify structure
-      expect(json['tabs'].first).to include(:id)
-      expect(json['tabs'].first).to include(:label)
-      expect(json['tabs'].first).to include(:path)
+      # Verify structure - JSON.parse returns string keys
+      expect(json['tabs'].first).to include('id')
+      expect(json['tabs'].first).to include('label')
+      expect(json['tabs'].first).to include('path')
     end
 
     it "includes correct tab IDs" do
       get '/api/v1/navigation', as: :json
 
       json = JSON.parse(response.body)
-      tab_ids = json['tabs'].map { |t| t[:id] }
+      tab_ids = json['tabs'].map { |t| t['id'] }
 
       expect(tab_ids).to include('channel')
       expect(tab_ids).to include('competition')
@@ -35,7 +35,7 @@ RSpec.describe "NativeBridgeController" do
       get '/api/v1/navigation', as: :json
 
       json = JSON.parse(response.body)
-      tab_labels = json['tabs'].map { |t| t[:label] }
+      tab_labels = json['tabs'].map { |t| t['label'] }
 
       expect(tab_labels).to include('Channel Price')
       expect(tab_labels).to include('Competition')

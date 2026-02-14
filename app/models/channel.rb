@@ -4,6 +4,9 @@ class Channel < ApplicationRecord
   self.primary_key = :id
   self.inheritance_column = nil  # Disable STI to use 'type' column normally
 
+  # Explicitly declare the type attribute for enum
+  attribute :type, :string
+
   # Associations
   belongs_to :country
   has_many :prices, dependent: :destroy
@@ -26,4 +29,5 @@ class Channel < ApplicationRecord
   }
 
   scope :active, -> { where(active: true) }
+  scope :by_priority, -> { joins(:country).order('countries.priority ASC, channels.name ASC') }
 end
