@@ -14,11 +14,11 @@ class ChannelStrategyService
     phone = Phone.find_by(id: phone_id)
     return { error: 'Phone not found' } unless phone
 
-    # Fetch prices with associations (eager loading to prevent N+1)
-    prices_query = Price
+    # Fetch prices from meppi_trades with associations
+    prices_query = MeppiTrade
       .where(phone_id:)
+      .where.not(price_usd: [nil, 0])
       .includes(:channel)
-      .where('date >= ?', DEFAULT_TIME_RANGE_DAYS.days.ago.to_date)
 
     prices_query = prices_query.joins(:channel).where(channels: { country_id: }) if country_id
 
@@ -44,13 +44,13 @@ class ChannelStrategyService
   # @param limit [Integer] Number of results
   # @return [Array<Hash>] Cheapest channels
   def self.cheapest_channels(country_id:, limit: 10)
-    # Find lowest prices by channel
-    prices = Price
+    # Find lowest prices by channel from meppi_trades
+    prices = MeppiTrade
       .joins(:channel, :phone)
       .where(channels: { country_id: })
-      .where('date >= ?', DEFAULT_TIME_RANGE_DAYS.days.ago.to_date)
+      .where.not(price_usd: [nil, 0])
       .group('channels.id, phones.id')
-      .select('channels.id, channels.name, phones.full_name, MIN(prices.price_usd) as min_price')
+      .select('channels.id, channels.name, phones.brand, phones.model, MIN(meppi_trades.price_usd) as min_price')
       .order('min_price ASC')
       .limit(limit)
 
@@ -58,7 +58,7 @@ class ChannelStrategyService
       {
         channel_id: p.id,
         channel_name: p.name,
-        phone_name: p.full_name,
+        phone_name: "#{p.brand} #{p.model}",
         min_price: p.min_price.to_f.round(2)
       }
     end.to_a
@@ -69,11 +69,9 @@ class ChannelStrategyService
   # @param country_id [Integer, nil] Optional country filter
   # @return [Hash] Price range statistics
   def self.price_range(phone_id, country_id: nil)
-    prices = Price.where(phone_id:)
+    prices = MeppiTrade.where(phone_id:).where.not(price_usd: [nil, 0])
 
     prices = prices.joins(:channel).where(channels: { country_id: }) if country_id
-
-    prices = prices.where('date >= ?', DEFAULT_TIME_RANGE_DAYS.days.ago.to_date)
 
     calculate_price_range(prices)
   end
@@ -84,9 +82,14 @@ class ChannelStrategyService
   # @param prices [ActiveRecord::Relation] Prices query
   # @return [Hash] Price range with spread
   def self.calculate_price_range(prices)
-    min_price = prices.minimum(:price_usd)&.round(2) || 0
-    max_price = prices.maximum(:price_usd)&.round(2) || 0
-    avg_price = prices.average(:price_usd)&.round(2) || 0
+    prices_array = prices.is_a?(Array) ? prices : prices.to_a
+    price_values = prices_array.map(&:price_usd).compact.select { |p| p > 0 }
+
+    return { min: 0, max: 0, avg: 0, spread_percent: 0 } if price_values.empty?
+
+    min_price = price_values.min.round(2)
+    max_price = price_values.max.round(2)
+    avg_price = (price_values.sum / price_values.size).round(2)
 
     spread_percent = if min_price.positive?
                        (((max_price - min_price) / min_price) * 100).round(1)
@@ -103,7 +106,7 @@ class ChannelStrategyService
   end
 
   # Build channel data array
-  # @param prices [Array<Price>] Price records
+  # @param prices [Array<MeppiTrade>] Price records
   # @param price_range [Hash] Price range statistics
   # @return [Array<Hash>] Channel data
   def self.build_channel_data(prices, price_range)
@@ -112,6 +115,8 @@ class ChannelStrategyService
 
     prices.map do |price|
       channel = price.channel
+      next nil unless channel
+
       discount_from_avg = if avg_price.positive?
                             (((avg_price - price.price_usd) / avg_price) * 100).round(1)
                           else
@@ -121,13 +126,13 @@ class ChannelStrategyService
       {
         id: channel.id,
         name: channel.name,
-        channel_type: channel.channel_type,
+        channel_type: channel.type,
         price_usd: price.price_usd.round(2),
         is_cheapest: price.price_usd == min_price,
         discount_from_avg:,
         recommendation: determine_recommendation(discount_from_avg, price.price_usd, min_price)
       }
-    end.sort_by { |c| c[:price_usd] }
+    end.compact.sort_by { |c| c[:price_usd] }
   end
 
   # Determine channel recommendation
