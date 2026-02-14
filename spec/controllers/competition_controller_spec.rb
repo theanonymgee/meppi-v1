@@ -88,13 +88,14 @@ RSpec.describe CompetitionController, type: :controller do
   end
 
   describe 'error handling' do
-    it 'handles StandardError with alert' do
+    it 'handles StandardError gracefully' do
       allow(CompetitionService).to receive(:market_analysis).and_raise(StandardError, 'Database error')
 
       get :index
 
-      expect(response).to redirect_to(competition_list_path)
-      expect(flash[:alert]).to be_present
+      # Should render OK with default data instead of redirecting
+      expect(response).to have_http_status(:ok)
+      expect(assigns(:market_analysis)).to be_a(Hash)
     end
   end
 end

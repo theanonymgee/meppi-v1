@@ -10,28 +10,31 @@ class PromotionService
   # @param country_id [Integer, nil] Optional country filter
   # @return [Hash] Active promotions and rankings
   def self.active_promotions(country_id: nil)
-    # Get current promotions from database
-    promotions = Promotion.where('end_date >= ? OR end_date IS NULL', Date.current)
+    # Use MeppiTrade for promotions data
+    trades_query = MeppiTrade.where.not(price_usd: [nil, 0])
+                             .where.not(discount_percent: [nil, 0])
 
-    promotions = promotions.joins(:channel).where(channels: { country_id: }) if country_id
-
-    # Get promotional prices
-    promo_prices = Price.where(price_type: :promotion)
-                        .where('date >= ?', DEFAULT_TIME_RANGE_DAYS.days.ago.to_date)
-
-    promo_prices = promo_prices.joins(:channel).where(channels: { country_id: }) if country_id
+    trades_query = trades_query.where(country_id: country_id) if country_id
 
     # Build promotion data
-    active_promos = build_promotion_data(promo_prices)
+    active_promos = build_promotion_data_from_trades(trades_query)
 
     # Calculate discount rankings
-    discount_ranking = calculate_discount_rankings(promo_prices)
+    discount_ranking = calculate_discount_rankings_from_trades(trades_query)
 
     {
       active_promotions: active_promos,
       discount_ranking:,
       total_count: active_promos.length,
       avg_discount: calculate_avg_discount(active_promos)
+    }
+  rescue StandardError => e
+    Rails.logger.error("PromotionService error: #{e.message}")
+    {
+      active_promotions: [],
+      discount_ranking: [],
+      total_count: 0,
+      avg_discount: 0.0
     }
   end
 
@@ -42,111 +45,91 @@ class PromotionService
     phone = Phone.find_by(id: phone_id)
     return [] unless phone
 
-    # Get all current prices for this phone
-    current_prices = Price
-      .where(phone_id:)
-      .where('date >= ?', DEFAULT_TIME_RANGE_DAYS.days.ago.to_date)
-      .includes(:channel)
+    # Get all trades for this phone
+    trades = MeppiTrade.where(phone_id:)
+                       .where.not(price_usd: [nil, 0])
+                       .includes(:channel)
+
+    return [] if trades.empty?
 
     # Calculate average price
-    avg_price = current_prices.average(:price_usd)&.round(2) || 0
+    avg_price = trades.average(:price_usd)&.round(2) || 0
 
     # Find promotional prices
-    current_prices.map do |price|
-      discount_percent = if avg_price.positive?
-                           (((avg_price - price.price_usd) / avg_price) * 100).round(1)
-                         else
-                           0
-                         end
+    trades.map do |trade|
+      discount_percent = trade.discount_percent || if avg_price.positive?
+                                                     (((avg_price - trade.price_usd) / avg_price) * 100).round(1)
+                                                   else
+                                                     0
+                                                   end
 
       {
-        channel: price.channel.name,
-        channel_id: price.channel.id,
-        channel_type: price.channel.channel_type,
-        price: price.price_usd.round(2),
+        channel: trade.channel&.name || 'Unknown',
+        channel_id: trade.channel_id,
+        channel_type: trade.channel&.type || 'unknown',
+        price: trade.price_usd.round(2),
         discount_percent: discount_percent.positive? ? discount_percent : 0,
-        is_promotional: price.price_type == 'promotion' || discount_percent >= 10
+        is_promotional: discount_percent >= 10
       }
     end.select { |p| p[:is_promotional] }.sort_by { |p| -p[:discount_percent] }
+  rescue StandardError => e
+    Rails.logger.error("PromotionService.discounts_for_phone error: #{e.message}")
+    []
   end
 
   private
 
-  # Build promotion data from prices
-  # @param promo_prices [ActiveRecord::Relation] Promotional prices
-  # @return [Array<Hash>] Promotion data
-  def self.build_promotion_data(promo_prices)
-    promo_prices.map do |price|
-      phone = price.phone
-      channel = price.channel
+  # Build promotion data from MeppiTrade records
+  def self.build_promotion_data_from_trades(trades_query)
+    trades_query.map do |trade|
+      phone = trade.phone
+      channel = trade.channel
+      next nil unless phone && channel
 
-      # Estimate original price (non-promotional average)
-      original_price = Price
-        .where(phone_id: phone.id)
-        .where.not(id: price.id)
-        .where('date >= ?', DEFAULT_TIME_RANGE_DAYS.days.ago.to_date)
-        .average(:price_usd)&.round(2) || price.price_usd * 1.2
-
-      discount_percent = if original_price.positive?
-                           (((original_price - price.price_usd) / original_price) * 100).round(1)
-                         else
-                           0
-                         end
-
-      days_remaining = if price.respond_to?(:end_date) && price.end_date
-                         (price.end_date - Date.current).to_i
-                       else
-                         nil
-                       end
+      # Use stored discount or calculate
+      discount_percent = trade.discount_percent || 0
 
       {
-        id: price.id,
+        id: trade.id,
         phone: phone.full_name,
         phone_id: phone.id,
         channel: channel.name,
         channel_id: channel.id,
-        original_price:,
-        discounted_price: price.price_usd.round(2),
-        discount_percent:,
-        valid_until: days_remaining&.positive? ? (Date.current + days_remaining).strftime('%Y-%m-%d') : nil,
-        days_remaining: days_remaining&.positive? ? days_remaining : nil
+        original_price: trade.price_usd * (1 + discount_percent / 100.0),
+        discounted_price: trade.price_usd.round(2),
+        discount_percent: discount_percent,
+        valid_until: trade.valid_until&.strftime('%Y-%m-%d'),
+        days_remaining: calculate_days_remaining(trade.valid_until)
       }
-    end.select { |p| p[:discount_percent] >= 5 } # Only show promotions with 5%+ discount
+    end.compact.select { |p| p[:discount_percent] >= 5 }
       .sort_by { |p| -p[:discount_percent] }
       .first(50)
   end
 
-  # Calculate discount rankings by phone
-  # @param promo_prices [ActiveRecord::Relation] Promotional prices
-  # @return [Array<Hash>] Discount rankings
-  def self.calculate_discount_rankings(promo_prices)
-    # Group by phone and find max discount
-    phone_discounts = promo_prices.group_by(&:phone_id).transform_values do |prices|
-      max_discount = prices.map do |price|
-        phone = price.phone
-        avg_price = prices.where.not(id: price.id).average(:price_usd) || price.price_usd * 1.2
-
-        if avg_price.positive?
-          (((avg_price - price.price_usd) / avg_price) * 100).round(1)
-        else
-          0
-        end
-      end.max || 0
+  # Calculate discount rankings from MeppiTrade records
+  def self.calculate_discount_rankings_from_trades(trades_query)
+    phone_discounts = trades_query.group_by(&:phone_id).transform_values do |trades|
+      max_discount = trades.map { |t| t.discount_percent || 0 }.max || 0
 
       {
-        phone: prices.first.phone.full_name,
-        phone_id: prices.first.phone_id,
+        phone: trades.first&.phone&.full_name || 'Unknown',
+        phone_id: trades.first&.phone_id,
         max_discount: max_discount,
-        channel_count: prices.map(&:channel_id).uniq.count
+        channel_count: trades.map(&:channel_id).compact.uniq.count
       }
     end
 
     phone_discounts.values.sort_by { |d| -d[:max_discount] }.first(20)
   end
 
+  # Calculate days remaining for promotion
+  def self.calculate_days_remaining(valid_until)
+    return nil unless valid_until
+    days = (valid_until - Date.current).to_i
+    days.positive? ? days : nil
+  end
+
   # Calculate average discount
-  # @param promotions [Array<Hash>] Promotion data
-  # @return [Float] Average discount percentage
   def self.calculate_avg_discount(promotions)
     return 0.0 if promotions.empty?
 

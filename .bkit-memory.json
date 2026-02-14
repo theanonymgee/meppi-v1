@@ -1,11 +1,13 @@
 {
-  "feature": "rails-dashboard-ui",
+  "feature": "database-migration-and-reconnection",
   "phase": "do",
-  "createdAt": "2026-02-11T03:00:00Z",
-  "updatedAt": "2026-02-11T05:00:00Z",
+  "createdAt": "2026-02-13T00:00:00Z",
+  "updatedAt": "2026-02-13T11:00:00Z",
   "previousFeature": "semantic-search-pgvector",
-  "previousMatchRate": 93,
-  "designDirection": "editorial-financial-times",
-  "designCompleted": true,
-  "implementationStarted": true
+  "previousMatchRate": 100,
+  "designComplete": true,
+  "implementationStarted": true,
+  "crossProject": true,
+  "affectedProjects": ["yt-rag-rails", "gsm-rails", "meppi-rails"],
+  "implementationGuide": "docs/ondev/20260213_03_database_migration_do_phase.md"
 }

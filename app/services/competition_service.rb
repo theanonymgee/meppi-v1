@@ -38,18 +38,15 @@ class CompetitionService
   # @param country_id [Integer, nil] Country filter
   # @return [Hash] Brand percentages
   def self.calculate_brand_share(country_id)
-    # Count phones by brand
-    query = Phone.all
+    # Count phones by brand using MeppiTrade
+    query = Phone.joins(:meppi_trades)
 
-    # If country specified, count phones with prices in that country
+    # If country specified, filter by country
     if country_id
-      query = Phone.joins(:prices).where(prices: { date: DEFAULT_TIME_RANGE_DAYS.days.ago.. })
-                    .joins(prices: { channel: :country })
-                    .where(countries: { id: country_id })
-                    .distinct
+      query = query.joins(:countries).where(meppi_trades: { country_id: country_id }).distinct
     end
 
-    brand_counts = query.group(:brand).count
+    brand_counts = query.distinct.group(:brand).count
     total_phones = brand_counts.values.sum
 
     return {} if total_phones.zero?
@@ -65,22 +62,23 @@ class CompetitionService
   # @param limit [Integer] Result limit
   # @return [Array<Hash>] Top models
   def self.get_top_models(country_id, limit = 20)
-    # Get phones with most price points
-    phones = Phone.select('phones.*, COUNT(prices.id) as price_count')
-                  .joins(:prices)
-                  .where('prices.date >= ?', DEFAULT_TIME_RANGE_DAYS.days.ago.to_date)
-                  .group('phones.id')
-                  .order('price_count DESC')
-                  .limit(limit)
+    # Get phones with most price points from MeppiTrade
+    query = Phone.select('phones.*, COUNT(meppi_trades.id) as price_count')
+                 .joins(:meppi_trades)
+                 .where.not(meppi_trades: { price_usd: [nil, 0] })
+                 .group('phones.id')
+                 .order('price_count DESC')
+                 .limit(limit)
 
     if country_id
-      phones = phones.joins(prices: { channel: :country })
-                    .where(countries: { id: country_id })
+      query = query.where(meppi_trades: { country_id: country_id })
     end
 
-    phones.map do |phone|
-      avg_price = phone.prices.where('date >= ?', DEFAULT_TIME_RANGE_DAYS.days.ago.to_date)
-                             .average(:price_usd)&.round(2) || 0
+    query.map do |phone|
+      trades_query = phone.meppi_trades.where.not(price_usd: [nil, 0])
+      trades_query = trades_query.where(country_id: country_id) if country_id
+
+      avg_price = trades_query.average(:price_usd)&.round(2) || 0
 
       # Determine market position
       market_position = if avg_price >= MARKET_POSITION_PREMIUM_THRESHOLD
@@ -92,10 +90,10 @@ class CompetitionService
                         end
 
       # Count competitor phones (similar price range)
-      competitors = Phone.joins(:prices)
-                        .where('prices.date >= ?', DEFAULT_TIME_RANGE_DAYS.days.ago.to_date)
+      competitors = Phone.joins(:meppi_trades)
                         .where.not(id: phone.id)
-                        .where(prices: { price_usd: (avg_price * COMPETITOR_PRICE_RANGE_MIN)..(avg_price * COMPETITOR_PRICE_RANGE_MAX) })
+                        .where.not(meppi_trades: { price_usd: [nil, 0] })
+                        .where(meppi_trades: { price_usd: (avg_price * COMPETITOR_PRICE_RANGE_MIN)..(avg_price * COMPETITOR_PRICE_RANGE_MAX) })
                         .distinct
                         .count
 
@@ -106,7 +104,7 @@ class CompetitionService
         price_avg: avg_price,
         market_position:,
         competitor_count: competitors,
-        price_points: phone.prices.where('date >= ?', DEFAULT_TIME_RANGE_DAYS.days.ago.to_date).count
+        price_points: trades_query.count
       }
     end
   end
@@ -115,25 +113,33 @@ class CompetitionService
   # @param country_id [Integer, nil] Country filter
   # @return [Array<Hash>] New entries
   def self.get_new_entries(country_id)
-    # Get phones created in the last 30 days
-    recent_phones = Phone.where('created_at >= ?', DEFAULT_TIME_RANGE_DAYS.days.ago)
-                         .order(created_at: :desc)
+    # Get phones with trades
+    query = Phone.joins(:meppi_trades)
+
+    if country_id
+      query = query.where(meppi_trades: { country_id: country_id })
+    end
+
+    recent_phones = query.distinct
+                         .order('phones.created_at DESC')
                          .limit(NEW_ENTRIES_DISPLAY_LIMIT)
 
     recent_phones.map do |phone|
       # Count channels with prices
-      channels = phone.prices.where('date >= ?', DEFAULT_TIME_RANGE_DAYS.days.ago.to_date)
-                            .joins(:channel)
-                            .distinct
-                            .count
+      trades_query = phone.meppi_trades.where.not(price_usd: [nil, 0])
+      trades_query = trades_query.where(country_id: country_id) if country_id
+
+      channels = trades_query.joins(:channel)
+                             .distinct
+                             .count
 
       {
         phone: phone.full_name,
         phone_id: phone.id,
         brand: phone.brand,
-        first_seen: phone.created_at.strftime('%Y-%m-%d'),
+        first_seen: phone.created_at&.strftime('%Y-%m-%d') || 'N/A',
         channels:,
-        has_prices: phone.prices.where('date >= ?', DEFAULT_TIME_RANGE_DAYS.days.ago.to_date).any?
+        has_prices: trades_query.any?
       }
     end
   end

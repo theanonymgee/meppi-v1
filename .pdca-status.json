@@ -1,0 +1,49 @@
+# PDCA Status Tracker
+
+> This file tracks the current status of PDCA cycles for all features
+
+**Last Updated**: 2026-02-13
+
+---
+
+## Feature Status Overview
+
+| Feature | Phase | Status | Match Rate | Progress |
+|---------|-------|--------|------------|----------|
+| semantic-search-pgvector | Act | Complete | 100% | 100% |
+| trades-controller-fix | Act | Complete | 100% | 100% |
+
+---
+
+## Details
+
+### semantic-search-pgvector
+- **Plan**: ✅ Complete (`docs/01-plan/features/semantic-search-pgvector.plan.md`)
+- **Design**: ✅ Complete (`docs/02-design/features/semantic-search-pgvector.design.md`)
+- **Do**: ✅ Complete
+- **Check**: ✅ Complete (100% match rate)
+- **Act**: ✅ Complete (3 iterations completed)
+- **Report**: ✅ Complete (`docs/04-report/meppi_rails.report.md`)
+
+### trades-controller-fix
+- **Plan**: ✅ Complete
+- **Design**: ✅ Complete
+- **Do**: ✅ Complete
+- **Check**: ✅ Complete (100% match rate)
+- **Act**: ✅ Complete (3 iterations completed)
+- **Report**: ✅ Complete
+
+---
+
+## Active Tasks
+
+- [ ] Archive completed features
+- [ ] Plan next feature implementation
+
+---
+
+## Archived Features
+
+| Feature | Archive Date | Documents Location |
+|---------|--------------|-------------------|
+| - | - | - |

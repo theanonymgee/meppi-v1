@@ -5,6 +5,10 @@
 class CompetitionController < ApplicationController
   before_action :set_countries
 
+  # Comparison limits
+  COMPARISON_MIN_PHONES = 2
+  COMPARISON_MAX_PHONES = 4
+
   # Market analysis dashboard
   def index
     country_id = params[:country_id]
@@ -12,7 +16,9 @@ class CompetitionController < ApplicationController
     @market_analysis = CompetitionService.market_analysis(country_id: country_id)
     @countries = Country.active.by_priority
   rescue StandardError => e
-    handle_error(e, 'Competition analysis')
+    Rails.logger.error("Competition analysis: #{e.message}")
+    @market_analysis = default_market_analysis
+    @countries = Country.active.by_priority
   end
 
   # Phone comparison view
@@ -26,7 +32,10 @@ class CompetitionController < ApplicationController
       @selected_phones = Phone.where(id: phone_ids)
     end
   rescue StandardError => e
-    handle_error(e, 'Phone comparison')
+    Rails.logger.error("Phone comparison: #{e.message}")
+    @comparison_data = []
+    @insights = {}
+    @selected_phones = []
   end
 
   private
@@ -35,9 +44,11 @@ class CompetitionController < ApplicationController
     @countries = Country.active.by_priority
   end
 
-  def handle_error(exception, context)
-    Rails.logger.error("#{context}: #{exception.message}")
-    flash[:alert] = "#{context.humanize} failed: #{exception.message}"
-    redirect_to competition_list_path
+  def default_market_analysis
+    {
+      market_share: {},
+      top_models: [],
+      new_entries: []
+    }
   end
 end
