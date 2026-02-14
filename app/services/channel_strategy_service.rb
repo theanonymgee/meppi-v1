@@ -20,7 +20,7 @@ class ChannelStrategyService
       .where.not(price_usd: [nil, 0])
       .includes(:channel)
 
-    prices_query = prices_query.joins(:channel).where(channels: { country_id: }) if country_id
+    prices_query = prices_query.joins(:channel).where(channels: { country_id: }) if country_id.present?
 
     prices = prices_query.to_a
 
