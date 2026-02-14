@@ -42,8 +42,8 @@ class CompetitionService
     query = Phone.joins(:meppi_trades)
 
     # If country specified, filter by country
-    if country_id
-      query = query.joins(:countries).where(meppi_trades: { country_id: country_id }).distinct
+    if country_id.present?
+      query = query.where(meppi_trades: { country_id: country_id })
     end
 
     brand_counts = query.distinct.group(:brand).count
@@ -63,16 +63,18 @@ class CompetitionService
   # @return [Array<Hash>] Top models
   def self.get_top_models(country_id, limit = 20)
     # Get phones with most price points from MeppiTrade
-    query = Phone.select('phones.*, COUNT(meppi_trades.id) as price_count')
-                 .joins(:meppi_trades)
-                 .where.not(meppi_trades: { price_usd: [nil, 0] })
-                 .group('phones.id')
-                 .order('price_count DESC')
-                 .limit(limit)
+    base_query = Phone.joins(:meppi_trades)
+                      .where.not(meppi_trades: { price_usd: [nil, 0] })
 
-    if country_id
-      query = query.where(meppi_trades: { country_id: country_id })
+    # Apply country filter before grouping
+    if country_id.present?
+      base_query = base_query.where(meppi_trades: { country_id: country_id })
     end
+
+    query = base_query.select('phones.*, COUNT(meppi_trades.id) as price_count')
+                      .group('phones.id')
+                      .order('price_count DESC')
+                      .limit(limit)
 
     query.map do |phone|
       trades_query = phone.meppi_trades.where.not(price_usd: [nil, 0])
@@ -116,7 +118,7 @@ class CompetitionService
     # Get phones with trades
     query = Phone.joins(:meppi_trades)
 
-    if country_id
+    if country_id.present?
       query = query.where(meppi_trades: { country_id: country_id })
     end
 
@@ -127,7 +129,7 @@ class CompetitionService
     recent_phones.map do |phone|
       # Count channels with prices
       trades_query = phone.meppi_trades.where.not(price_usd: [nil, 0])
-      trades_query = trades_query.where(country_id: country_id) if country_id
+      trades_query = trades_query.where(country_id: country_id) if country_id.present?
 
       channels = trades_query.joins(:channel)
                              .distinct
